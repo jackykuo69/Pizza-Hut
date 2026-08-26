@@ -793,15 +793,21 @@ function renderCocSheet(finalPlan){
   </div>`;
 }
 async function scoreInput(rowIndex, key){
-  let v = state.evalScores?.[rowIndex]?.[key];
+  const selectors = [
+    `input.score-radio[data-row="${rowIndex}"][data-key="${key}"]:checked`,
+    `input[data-row="${rowIndex}"][data-key="${key}"]:checked`,
+    `input[name="score_${rowIndex}_${key}"]:checked`
+  ];
 
-  // Fallback: if the event listener did not write into state for any reason,
-  // read the checked radio directly from the current table.
-  if(v === undefined || v === null || v === ""){
-    const el = document.querySelector(`input.score-radio[data-row="${rowIndex}"][data-key="${key}"]:checked`);
-    if(el) v = el.value;
+  for(const selector of selectors){
+    const el = document.querySelector(selector);
+    if(el){
+      const n = Number.parseInt(String(el.value), 10);
+      if(Number.isFinite(n)) return n;
+    }
   }
 
+  const v = state.evalScores?.[rowIndex]?.[key];
   const n = Number.parseInt(String(v), 10);
   return Number.isFinite(n) ? n : null;
 }
@@ -813,6 +819,30 @@ function setScore(rowIndex, key, value){
   updateEvaluationResult();
 }
 function bindScoreInputs(){
+  // Bind only once at document level. This catches all dynamically generated radio inputs.
+  if(window.__cocScoreBound === true) return;
+  window.__cocScoreBound = true;
+  document.addEventListener("change", (event)=>{
+    const input = event.target;
+    if(!input || input.tagName !== "INPUT") return;
+    const isScoreInput = input.classList.contains("score-radio") || String(input.name || "").startsWith("score_");
+    if(!isScoreInput) return;
+
+    const row = Number.parseInt(input.dataset.row ?? String(input.name || "").split("_")[1], 10);
+    const key = input.dataset.key ?? String(input.name || "").split("_")[2];
+
+    if(Number.isFinite(row) && key){
+      if(!state.evalScores) state.evalScores = {};
+      if(!state.evalScores[row]) state.evalScores[row] = {};
+      const n = Number.parseInt(String(input.value), 10);
+      state.evalScores[row][key] = Number.isFinite(n) ? n : null;
+    }
+
+    updateEvaluationResult();
+  });
+}
+
+function bindScoreInputs(){
   document.querySelectorAll("input.score-radio").forEach(input=>{
     if(input.dataset.scoreBound === "1") return;
     input.dataset.scoreBound = "1";
@@ -823,13 +853,7 @@ function bindScoreInputs(){
     });
   });
 }
-function setScore(rowIndex, key, value){
-  if(!state.evalScores) state.evalScores = {};
-  if(!state.evalScores[rowIndex]) state.evalScores[rowIndex] = {};
-  const n = Number.parseInt(String(value), 10);
-  state.evalScores[rowIndex][key] = Number.isFinite(n) ? n : null;
-  updateEvaluationResult();
-}
+
 function getEvaluationScores(){
   const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
   return selected.map((plan, idx)=>{
@@ -839,7 +863,7 @@ function getEvaluationScores(){
       scores[c.key] = Number.isFinite(n) ? n : null;
     });
     const complete = evaluationCriteria.every(c=>Number.isFinite(scores[c.key]));
-    const total = complete ? evaluationCriteria.reduce((sum,c)=>sum + scores[c.key], 0) : null;
+    const total = complete ? evaluationCriteria.reduce((sum,c)=>sum + Number(scores[c.key]), 0) : null;
     return {plan, idx, originalIndex: state.selectedCandidateIndices[idx], scores, complete, total};
   });
 }
@@ -900,7 +924,7 @@ function renderEvaluation(){
     <div id="tieBox"></div>
   </div>`;
   $("finalBox").classList.remove("hidden");
-  $("finalBox").innerHTML = `<h3>整理成 COC 表與 Action Design</h3><div class="actions"><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div>`;
+  $("finalBox").innerHTML = `<h3>整理成 COC 表與 Action Design</h3><div class="actions"><button type="button" onclick="updateEvaluationResult()">重新計算分數</button><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div>`;
   bindScoreInputs();
   $("makeFinal")?.addEventListener("click", ()=>makeFinal());
   updateEvaluationResult();
@@ -962,7 +986,11 @@ async function makeFinal(){
     return;
   }
   if(!evals.every(e=>e.complete)){
-    $("finalResult").innerHTML = `<div class="error">請先完成所有候選方案的五項評分。</div>`;
+    const missing = evals
+      .filter(e=>!e.complete)
+      .map(e=>safe(e.plan[0]))
+      .join("、");
+    $("finalResult").innerHTML = `<div class="error">請先完成所有候選方案的五項評分。尚未完成：${missing || "部分候選方案"}</div>`;
     return;
   }
   if(!state.data.selectedPlan){
@@ -1091,6 +1119,7 @@ function makeCandidates(){
   renderStages();
 }
 
+bindScoreInputs();
 bindUnlocks();
 renderStages();
 bindOtherInputs();
