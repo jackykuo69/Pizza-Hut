@@ -1,18 +1,248 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>COC 講師後台</title><style>body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:#f3f5f7;color:#172033}main{max-width:1180px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}h1{margin:0 0 8px}.hint{color:#667085;line-height:1.6}.panel{background:#fff;border:1px solid #d0d5dd;border-radius:14px;padding:18px;margin-top:16px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}button{border:0;background:#62a53a;color:#fff;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.secondary{border:1px solid #d0d5dd;background:#fff;color:#172033}table{border-collapse:collapse;width:100%;font-size:14px}th{background:#62a53a;color:#fff;text-align:left;padding:10px;border:1px solid #79b25b}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fafcf9}.warn{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;border-radius:10px;padding:12px;margin-top:10px}.pill{display:inline-block;background:#eef7e8;color:#3e7f24;border-radius:999px;padding:3px 8px;font-weight:800;font-size:12px}
-    .admin-gate{max-width:520px;margin:80px auto;background:#fff;border:1px solid #d0d5dd;border-radius:16px;padding:28px;box-shadow:0 10px 30px rgba(16,24,40,.08)}
-    .admin-gate h1{font-size:26px;margin:0 0 8px;color:#172033}
-    .admin-gate p{color:#667085;line-height:1.6}
-    .admin-gate input{width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:12px;font-size:16px;margin:10px 0}
-    .admin-gate button{border:0;background:#62a53a;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;cursor:pointer;font-size:15px}
-    .admin-gate .error{color:#b42318;font-weight:800;margin-top:10px}
-    
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COC 講師後台</title>
+<style>
+  :root{--ph-red:#e31b23;--ph-red-soft:#fff1f1;--ph-red-line:#f3c7c9;--ph-bg:#faf7f5;--ink:#172033;--muted:#667085;--line:#d0d5dd;--danger:#b42318;}
+  body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:var(--ph-bg);color:var(--ink)}
+  main{max-width:1280px;margin:24px auto;padding:0 16px}
+  .top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+  h1{margin:0 0 8px}
+  .hint{color:var(--muted);line-height:1.6}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+  button{border:0;background:var(--ph-red);color:#fff;border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}
+  button.secondary{border:1px solid var(--line);background:#fff;color:var(--ink)}
+  button.danger{background:var(--danger)}
+  button.small{padding:6px 10px;font-size:13px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th{background:var(--ph-red);color:#fff;text-align:left;padding:10px;border:1px solid #c8161d;white-space:nowrap}
+  td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}
+  tr:nth-child(even) td{background:#fff8f8}
+  .warn{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;border-radius:10px;padding:12px;margin-top:10px}
+  .pill{display:inline-block;background:#fff1f1;color:var(--ph-red);border-radius:999px;padding:3px 8px;font-weight:800;font-size:12px}
+  .admin-gate{max-width:520px;margin:80px auto;background:#fff;border:1px solid var(--ph-red-line);border-radius:16px;padding:28px;box-shadow:0 10px 30px rgba(16,24,40,.08)}
+  .admin-gate h1{font-size:26px;margin:0 0 8px;color:var(--ink)}
+  .admin-gate p{color:var(--muted);line-height:1.6}
+  .admin-gate input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:16px;margin:10px 0}
+  .admin-gate button{background:var(--ph-red)}
+  .admin-gate .error{color:var(--danger);font-weight:800;margin-top:10px}
+  dialog{border:0;border-radius:16px;max-width:920px;width:calc(100% - 32px);padding:0;box-shadow:0 24px 80px rgba(16,24,40,.24)}
+  dialog::backdrop{background:rgba(15,23,42,.45)}
+  .modal-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .modal-body{padding:18px 20px;max-height:72vh;overflow:auto}
+  .kv{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid #eef2f6;padding:8px 0;gap:12px}
+  .kv strong{color:#344054}
+  pre{background:#f8fafc;border:1px solid #e4e7ec;border-radius:12px;padding:12px;white-space:pre-wrap;word-break:break-word;font-family:"Consolas","Courier New",monospace;font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div>
+      <h1>COC 講師後台</h1>
+      <div class="hint">查看各組填寫進度與商圈分類。可查看單筆內容，也可刪除測試或不必要資料。</div>
+    </div>
+    <a href="/" class="hint">返回學員端</a>
+  </div>
 
-    :root{--ph-red:#e31b23;--ph-red-soft:#fff1f1;--ph-red-line:#f3c7c9;--ph-bg:#faf7f5;}
-    body{background:var(--ph-bg)}
-    .admin-gate button{background:var(--ph-red)!important}
-    .admin-gate{border-color:var(--ph-red-line);background:#fff}
-    
-</style></head><body><main><div class="top"><div><h1>COC 講師後台</h1><div class="hint">查看各組填寫進度與商圈分類。正式課程需連接 Cloudflare D1 才能跨裝置收集所有小組資料。</div></div><a href="/" class="hint">返回學員端</a></div><div class="warn">若尚未設定 Cloudflare D1，本頁只會顯示同一瀏覽器 localStorage 的測試資料；正式上課請完成 D1 綁定。</div><div class="panel"><div class="actions"><button id="refresh">重新整理</button><button class="secondary" id="download">下載 CSV</button></div><div id="status" class="hint"></div><div style="overflow:auto"><table id="tbl"><thead><tr><th>組別</th><th>門店</th><th>商圈類型</th><th>細分情境</th><th>目前階段</th><th>完成狀態</th><th>更新時間</th></tr></thead><tbody></tbody></table></div></div></main><script>let rows=[];function parseStatus(s){try{const o=typeof s==='string'?JSON.parse(s):s;return Object.keys(o||{}).filter(k=>o[k]).map(k=>'Step '+k).join('、')||'尚未完成';}catch(e){return s||'尚未完成'}}async function load(){const status=document.getElementById('status');try{const r=await fetch('/api/submissions');const j=await r.json();if(!j.ok)throw new Error(j.error||'API 尚未可用');rows=j.items||[];status.innerHTML=`後端資料庫：<span class="pill">已連線</span>，共 ${rows.length} 組資料`;}catch(e){rows=JSON.parse(localStorage.getItem('coc_submissions')||'[]');status.innerHTML=`後端資料庫尚未連線，改讀本機測試資料，共 ${rows.length} 組資料。`;}render()}function render(){document.querySelector('#tbl tbody').innerHTML=rows.map(r=>`<tr><td>${r.group_name||''}</td><td>${r.store_name||''}</td><td>${r.district_type||''}</td><td>${r.district_subtype||''}</td><td>${r.current_stage||0}</td><td>${parseStatus(r.stage_status)}</td><td>${r.updated_at||''}</td></tr>`).join('')}function csv(){const head=['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間'];const lines=[head.join(',')].concat(rows.map(r=>[r.group_name,r.store_name,r.district_type,r.district_subtype,r.current_stage,parseStatus(r.stage_status),r.updated_at].map(v=>'"'+String(v||'').replaceAll('"','""')+'"').join(',')));const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='COC_groups.csv';a.click();URL.revokeObjectURL(a.href)}document.getElementById('refresh').addEventListener('click',load);document.getElementById('download').addEventListener('click',csv);load();</script>
+  <div class="warn">此頁僅供講師與工作人員使用。正式上課前，建議先刪除測試資料。</div>
+
+  <div class="panel">
+    <div class="actions">
+      <button id="refresh">重新整理</button>
+      <button class="secondary" id="download">下載 CSV</button>
+    </div>
+    <div id="status" class="hint"></div>
+    <div style="overflow:auto">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>組別</th>
+            <th>門店</th>
+            <th>商圈類型</th>
+            <th>細分情境</th>
+            <th>目前階段</th>
+            <th>完成狀態</th>
+            <th>更新時間</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<dialog id="detailDialog">
+  <div class="modal-head">
+    <h2 style="margin:0">單筆資料查看</h2>
+    <button class="secondary" onclick="detailDialog.close()">關閉</button>
+  </div>
+  <div class="modal-body" id="detailBody"></div>
+</dialog>
+
+<script>
+let rows = [];
+let usingBackend = false;
+
+function escapeHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function parseJson(v, fallback = {}){
+  try { return typeof v === 'string' ? JSON.parse(v || '{}') : (v || fallback); }
+  catch(e){ return fallback; }
+}
+function parseStatus(s){
+  const o = parseJson(s, {});
+  const names = {1:'Step 1',2:'Step 2',3:'Step 3',4:'Step 4'};
+  const out = Object.keys(o || {}).filter(k => o[k]).map(k => names[k] || ('Step '+k));
+  return out.join('、') || '尚未完成';
+}
+function currentStageLabel(n){
+  const map = {0:'Step 0',1:'Step 1',2:'Step 2',3:'Step 3',4:'Step 4'};
+  return map[n] || n || 0;
+}
+async function load(){
+  const status = document.getElementById('status');
+  try{
+    const r = await fetch('/api/submissions');
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'API 尚未可用');
+    rows = j.items || [];
+    usingBackend = true;
+    status.innerHTML = `後端資料庫：<span class="pill">已連線</span>，共 ${rows.length} 組資料`;
+  }catch(e){
+    rows = JSON.parse(localStorage.getItem('coc_submissions') || '[]');
+    usingBackend = false;
+    status.innerHTML = `後端資料庫尚未連線，改讀本機測試資料，共 ${rows.length} 組資料。`;
+  }
+  render();
+}
+function render(){
+  const body = document.querySelector('#tbl tbody');
+  body.innerHTML = rows.map((r, i) => `
+    <tr>
+      <td>${escapeHtml(r.group_name)}</td>
+      <td>${escapeHtml(r.store_name)}</td>
+      <td>${escapeHtml(r.district_type)}</td>
+      <td>${escapeHtml(r.district_subtype)}</td>
+      <td>${escapeHtml(currentStageLabel(r.current_stage))}</td>
+      <td>${escapeHtml(parseStatus(r.stage_status))}</td>
+      <td>${escapeHtml(r.updated_at)}</td>
+      <td>
+        <button class="small secondary" onclick="viewRow(${i})">查看</button>
+        <button class="small danger" onclick="deleteRow(${i})">刪除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function section(title, content){
+  return `<h3>${escapeHtml(title)}</h3>${content}`;
+}
+function list(items){
+  if(!Array.isArray(items) || !items.length) return '<div class="hint">無資料</div>';
+  return `<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
+}
+function renderData(data){
+  let html = '';
+  if(data.step1){
+    html += section('Step 1｜顧客需求與痛點', `
+      <div class="kv"><strong>門市限制</strong><div>${list(data.step1.limits)}</div></div>
+      <div class="kv"><strong>目標顧客</strong><div>${list(data.step1.customers)}</div></div>
+      <div class="kv"><strong>相對價值</strong><div>${list(data.step1.value)}</div></div>
+    `);
+  }
+  if(data.step2){
+    html += section('Step 2｜資源與做法', `
+      <div class="kv"><strong>既有資源</strong><div>${list(data.step2.resources)}</div></div>
+      <div class="kv"><strong>補充內容</strong><div>${escapeHtml(data.step2.note || '')}</div></div>
+    `);
+  }
+  if(data.step3){
+    html += section('Step 3｜條件與限制', `
+      <div class="kv"><strong>限制條件</strong><div>${list(data.step3.constraints)}</div></div>
+      <div class="kv"><strong>處理方向</strong><div>${list(data.step3.directions)}</div></div>
+    `);
+  }
+  if(data.step4?.candidates){
+    html += section('Step 4｜候選行動', `
+      <table>
+        <thead><tr><th>候選行動</th><th>回應需求</th><th>資源做法</th><th>限制</th><th>指標</th><th>判斷</th></tr></thead>
+        <tbody>${data.step4.candidates.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    `);
+  }
+  if(data.final){
+    html += section('最終選定行動', `
+      <table>
+        <thead><tr><th>行動</th><th>回應需求</th><th>資源做法</th><th>限制</th><th>指標</th><th>判斷</th></tr></thead>
+        <tbody>${data.final.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    `);
+  }
+  if(!html) html = '<div class="hint">尚無詳細填寫內容。</div>';
+  html += section('原始資料', `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`);
+  return html;
+}
+function viewRow(i){
+  const r = rows[i];
+  const data = parseJson(r.data, {});
+  document.getElementById('detailBody').innerHTML = `
+    <div class="kv"><strong>組別</strong><div>${escapeHtml(r.group_name)}</div></div>
+    <div class="kv"><strong>門店</strong><div>${escapeHtml(r.store_name)}</div></div>
+    <div class="kv"><strong>商圈類型</strong><div>${escapeHtml(r.district_type)}</div></div>
+    <div class="kv"><strong>細分情境</strong><div>${escapeHtml(r.district_subtype)}</div></div>
+    <div class="kv"><strong>目前階段</strong><div>${escapeHtml(currentStageLabel(r.current_stage))}</div></div>
+    <div class="kv"><strong>完成狀態</strong><div>${escapeHtml(parseStatus(r.stage_status))}</div></div>
+    <div class="kv"><strong>更新時間</strong><div>${escapeHtml(r.updated_at)}</div></div>
+    ${renderData(data)}
+  `;
+  document.getElementById('detailDialog').showModal();
+}
+async function deleteRow(i){
+  const r = rows[i];
+  const label = `${r.group_name || '未命名組別'}${r.store_name ? '／' + r.store_name : ''}`;
+  if(!confirm(`確定要刪除「${label}」這筆資料嗎？此動作無法復原。`)) return;
+
+  if(usingBackend){
+    const resp = await fetch('/api/submissions?id=' + encodeURIComponent(r.id), { method:'DELETE' });
+    const j = await resp.json();
+    if(!j.ok){
+      alert('刪除失敗：' + (j.error || '未知錯誤'));
+      return;
+    }
+  }else{
+    const all = JSON.parse(localStorage.getItem('coc_submissions') || '[]').filter(x => x.id !== r.id);
+    localStorage.setItem('coc_submissions', JSON.stringify(all));
+  }
+  await load();
+}
+function csv(){
+  const head = ['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間'];
+  const lines = [head.join(',')].concat(rows.map(r => [
+    r.group_name,
+    r.store_name,
+    r.district_type,
+    r.district_subtype,
+    currentStageLabel(r.current_stage),
+    parseStatus(r.stage_status),
+    r.updated_at
+  ].map(v => '"' + String(v || '').replaceAll('"','""') + '"').join(',')));
+  const blob = new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'COC_groups.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+document.getElementById('refresh').addEventListener('click', load);
+document.getElementById('download').addEventListener('click', csv);
+load();
+</script>
+
 <script>
 (function(){
   const ADMIN_PASSWORD = "coc-admin";
@@ -59,5 +289,5 @@
   });
 })();
 </script>
-
-</body></html>
+</body>
+</html>
