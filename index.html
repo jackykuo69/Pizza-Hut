@@ -75,6 +75,7 @@
   table{font-size:10.5pt}
 }
 
+.score-cell label{display:inline-block;margin:2px 8px 2px 0}.score-guide{font-size:12px;color:#475467;line-height:1.65;margin-top:6px}.total-cell{font-weight:800}.winner-cell{font-weight:800;color:#ed1c24}
 </style>
 
 <style id="v16-extra">
@@ -792,9 +793,35 @@ function renderCocSheet(finalPlan){
   </div>`;
 }
 async function scoreInput(rowIndex, key){
-  const v = state.evalScores?.[rowIndex]?.[key];
+  let v = state.evalScores?.[rowIndex]?.[key];
+
+  // Fallback: if the event listener did not write into state for any reason,
+  // read the checked radio directly from the current table.
+  if(v === undefined || v === null || v === ""){
+    const el = document.querySelector(`input.score-radio[data-row="${rowIndex}"][data-key="${key}"]:checked`);
+    if(el) v = el.value;
+  }
+
   const n = Number.parseInt(String(v), 10);
   return Number.isFinite(n) ? n : null;
+}
+function setScore(rowIndex, key, value){
+  if(!state.evalScores) state.evalScores = {};
+  if(!state.evalScores[rowIndex]) state.evalScores[rowIndex] = {};
+  const n = Number.parseInt(String(value), 10);
+  state.evalScores[rowIndex][key] = Number.isFinite(n) ? n : null;
+  updateEvaluationResult();
+}
+function bindScoreInputs(){
+  document.querySelectorAll("input.score-radio").forEach(input=>{
+    if(input.dataset.scoreBound === "1") return;
+    input.dataset.scoreBound = "1";
+    input.addEventListener("change", ()=>{
+      const row = Number.parseInt(input.dataset.row, 10);
+      const key = input.dataset.key;
+      setScore(row, key, input.value);
+    });
+  });
 }
 function setScore(rowIndex, key, value){
   if(!state.evalScores) state.evalScores = {};
@@ -854,9 +881,9 @@ function renderEvaluation(){
 
   const rows = selected.map((plan, i)=>{
     const scoreCells = evaluationCriteria.map(c => `<td class="score-cell">
-      <label><input type="radio" name="score_${i}_${c.key}" value="5" onchange="setScore(${i}, '${c.key}', 5)"> 5</label>
-      <label><input type="radio" name="score_${i}_${c.key}" value="3" onchange="setScore(${i}, '${c.key}', 3)"> 3</label>
-      <label><input type="radio" name="score_${i}_${c.key}" value="1" onchange="setScore(${i}, '${c.key}', 1)"> 1</label>
+      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="5"> 5</label>
+      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="3"> 3</label>
+      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="1"> 1</label>
       <div class="score-guide">${safe(c.guide)}</div>
     </td>`).join("");
     return `<tr><td>${safe(plan[0])}</td>${scoreCells}<td class="total-cell" id="total_${i}">尚未完成</td><td class="winner-cell" id="selected_${i}"></td></tr>`;
@@ -874,6 +901,7 @@ function renderEvaluation(){
   </div>`;
   $("finalBox").classList.remove("hidden");
   $("finalBox").innerHTML = `<h3>整理成 COC 表與 Action Design</h3><div class="actions"><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div>`;
+  bindScoreInputs();
   $("makeFinal")?.addEventListener("click", ()=>makeFinal());
   updateEvaluationResult();
 }
@@ -927,6 +955,7 @@ function manualSelectWinner(idx){
   if(tie) tie.innerHTML = `<div class="ok">已由使用者選定方案：${safe(selected.plan[0])}</div>`;
 }
 async function makeFinal(){
+  updateEvaluationResult();
   const evals = getEvaluationScores();
   if(state.selectedCandidateIndices.length < 2){
     $("finalResult").innerHTML = `<div class="error">請先選出至少 2 個候選行動進入方案評估。</div>`;
