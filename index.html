@@ -286,7 +286,7 @@
 
     <section id="step4" class="hidden">
       <h2>Step 4｜A. 下一步行動設計</h2>
-      <p class="hint">系統會根據前三階段診斷，自動提出同一組 COC 結果下的候選行動方向。請先選出 2–3 個候選行動進入方案評估。</p>
+      <p class="hint">系統會根據前三階段診斷，自動提出同一組 COC 結果下的候選行動方向。請先選出至少 2 個候選行動進入方案評估。</p>
       <div id="candidateResult"></div>
       <div id="evaluationBox" class="hidden"></div>
       <div id="finalBox" class="hidden"></div>
@@ -624,49 +624,104 @@ const tieBreakerOrder = ["benefit","feasibility","cost","risk","testability"];
 
 function buildCandidates(){
   const code = state.district?.code || "";
-  const subtype = state.subtype || "";
-  let rows = [];
-  if(code === "COM"){
-    rows = [
-      ["午餐快取預約方案","回應上班族午休時間短、希望準時取餐","預購、外帶包裝、取餐動線、套餐推薦","需控管尖峰備餐與取餐分流","午餐預約單數／平均等待時間／取餐錯誤率","建議優先"],
-      ["企業團訂試吃包","降低辦公室或工業區團訂決策門檻","試吃包、團訂菜單、企業拜訪或周邊合作","需控管試吃成本、配送時間與訂單穩定性","團訂筆數／企業名單數／回購率","可討論"],
-      ["下班外帶晚餐組合","回應下班族順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"],
-      ["取餐與外送分流改善","回應尖峰取餐、外送交疊造成的混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]
-    ];
-    if(subtype.includes("商場")) rows.push(["商場員工回訪方案","回應商場員工固定但忙碌的用餐需求","員工優惠、預購、固定時段提醒","需確認商場規範與宣傳限制","員工回訪率／預購單數","可討論"]);
-  }else if(code === "Sub"){
-    rows = [
-      ["地方活動／節慶快閃攤位","抓住地方活動或節慶人流，創造接觸與銷售","外部攤位、披薩切片、預購或回店優惠","需確認攤位規範、備貨、保溫與結帳流程","現場銷售額／優惠券回收／回店消費","建議優先"],
-      ["在地熟客回訪日","強化在地熟客關係，創造再次購買理由","熟客名單、會員系統、社群或群組通知","活動規則要簡單，避免增加門店負擔","熟客回訪率／會員新增／指定套餐銷售","建議優先"],
-      ["社區預購外帶導流","讓交通不便或人流分散的商圈也能形成訂購","預購表單、外帶套餐、固定取餐時段","需確保取餐時間、備餐量與通知清楚","預購訂單數／外帶占比／取消率","可討論"],
-      ["在地合作試吃活動","讓還不常買的在地顧客開始接觸與嘗試","試吃品項、合作場域、優惠券或會員導流","需確認合作規範、食品安全與成本","試吃人次／名單數／後續訂購","可討論"]
-    ];
-    if(subtype.includes("觀光") || subtype.includes("老街")) rows.push(["觀光補給外帶組合","回應旅客快速補給、同行分食與好帶走需求","外帶包裝、多人分享餐、清楚套餐","需避免品項太複雜、影響出餐速度","觀光時段交易數／分享餐銷售","可討論"]);
-  }else{
-    rows = [
-      ["社區試吃活動","降低第一次嘗試門檻，讓居民先接觸產品","試吃品項、外帶包裝、優惠券或會員導流","需控管成本、食品安全與社區規範","試吃人次／優惠券回收／會員新增","建議優先"],
-      ["社區市集擺攤","在社區聚集場景創造接觸與購買","披薩切片、攤位布置、現場銷售話術","需確認攤位、備貨、保溫與結帳流程","現場銷售額／回店消費／社群互動","可討論"],
-      ["熟客回訪活動日","創造附近熟客再次購買理由","會員系統、熟客邀請、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"],
-      ["預購外帶導流","把社區接觸轉成後續訂購","預購表單、外帶套餐、社群通知","需確保取餐時間與備餐穩定","預購訂單數／外帶占比","建議優先"],
-      ["戰鬥陀螺社區合作挑戰","創造陪伴型家庭客的互動理由","外部場地、社區合作、分享餐","優先使用社區或外部場地，不預設店內久留","活動參與組數／回店消費","可討論"]
-    ];
+  const subtype = subtypeFinal() || state.subtype || "";
+  const s1 = state.data.step1 || {};
+  const s2 = state.data.step2 || {};
+  const s3 = state.data.step3 || {};
+  const profile = [
+    code, subtype,
+    ...(s1.customers || []),
+    ...(s1.contexts || []),
+    ...(s1.pains || []),
+    ...(s1.value || []),
+    ...(s2.resources || []),
+    s2.note || "",
+    ...(s3.constraints || []),
+    ...(s3.impacts || []),
+    ...(s3.directions || [])
+  ].join(" ");
+
+  const has = (...words)=>words.some(w=>profile.includes(w));
+  const rows = [];
+  const add = row => {
+    if(!rows.some(r=>r[0] === row[0])) rows.push(row);
+  };
+
+  const isHospital = has("醫院","診所","陪診","陪伴家屬","醫護","就診");
+  const isCaregiver = has("陪診","陪伴家屬","陪病","家屬");
+  const isMedicalStaff = has("醫護","行政人員","醫院／診所工作圈");
+  const isFamily = has("家庭客","陪伴型家庭客","接送家庭","家庭活動","家庭旅遊");
+  const isCommunity = has("社區","住宅","在地","地方","學校／社區");
+  const isTourism = has("觀光","節慶","旅客","老街");
+  const isFastPickup = has("趕時間","快速","外帶","預購","取餐","少等待","時間不固定");
+
+  if(isHospital){
+    if(isCaregiver){
+      add(["陪診家屬快速取餐組合","回應陪診或陪伴家屬時間不穩定、需要快速取得餐點的需求","預購外帶、簡單套餐、清楚取餐提醒、外帶包裝","需避免活動規則太複雜，並注意醫院周邊動線與等待時間","預購單數／取餐等待時間／指定套餐銷售","建議優先"]);
+      add(["醫院周邊預購外帶導流","讓陪診家屬可先預訂、減少現場等待與決策時間","預購表單、外帶套餐、固定取餐時段、社群或會員通知","需確保備餐穩定、通知清楚，避免尖峰取餐混亂","預購訂單數／外帶占比／取消率","建議優先"]);
+      add(["陪伴輪替安心餐方案","回應陪伴者需要短時間用餐、替換照顧或帶回附近的情境","簡單分享餐、外帶包裝、取餐提醒、固定品項","需注意餐點保存、取餐時間與醫院周邊規範","指定套餐銷售／回訪率／客訴件數","可討論"]);
+      add(["附近藥局或停車場合作提醒","透過醫院周邊接觸點，讓陪診家屬在需要用餐時想到門店","合作點海報、優惠券、QR Code、外帶套餐資訊","需確認合作規範、張貼位置與優惠券回收流程","合作點掃碼數／優惠券回收／回店消費","可討論"]);
+    }else if(isMedicalStaff){
+      add(["醫護輪班預購取餐","回應醫護與行政人員用餐時間不固定、需要穩定快速取餐","預購表單、固定取餐時段、外帶套餐、會員提醒","需配合輪班時間與尖峰備餐，避免取餐延誤","預購單數／平均等待時間／回購率","建議優先"]);
+      add(["醫院單位團訂試吃包","降低醫院科室或行政單位團訂決策門檻","試吃包、團訂菜單、指定窗口、外送包裝","需控管食品安全、配送時間與訂單穩定性","團訂筆數／單位名單數／回購率","可討論"]);
+      add(["下班外帶晚餐組合","回應醫護或行政人員下班順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"]);
+      add(["醫院周邊取餐分流改善","回應醫院周邊尖峰取餐、外送交疊造成的等待與混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]);
+    }else{
+      add(["醫院周邊快速外帶導流","回應醫院周邊顧客時間有限、需要快速取得餐點","外帶套餐、清楚取餐提醒、預購表單","需注意尖峰取餐、醫院周邊動線與等待時間","外帶單數／平均等待時間／指定套餐銷售","建議優先"]);
+      add(["指定時段預購取餐","讓醫院周邊顧客在固定時段快速完成取餐","預購表單、固定取餐時段、簡單套餐","需確保備餐量與通知清楚","預購單數／取消率／取餐準時率","建議優先"]);
+      add(["附近熟客回訪提醒","創造醫院周邊熟客再次購買理由","會員系統、熟客提醒、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"]);
+    }
+    return rows.slice(0,5);
   }
-  return rows.slice(0,6);
+
+  if(code === "COM"){
+    add(["午餐快取預約方案","回應上班族午休時間短、希望準時取餐","預購、外帶包裝、取餐動線、套餐推薦","需控管尖峰備餐與取餐分流","午餐預約單數／平均等待時間／取餐錯誤率","建議優先"]);
+    add(["企業團訂試吃包","降低辦公室或工業區團訂決策門檻","試吃包、團訂菜單、企業拜訪或周邊合作","需控管試吃成本、配送時間與訂單穩定性","團訂筆數／企業名單數／回購率","可討論"]);
+    add(["下班外帶晚餐組合","回應下班族順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"]);
+    add(["取餐與外送分流改善","回應尖峰取餐、外送交疊造成的混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]);
+    if(subtype.includes("商場")) add(["商場員工回訪方案","回應商場員工固定但忙碌的用餐需求","員工優惠、預購、固定時段提醒","需確認商場規範與宣傳限制","員工回訪率／預購單數","可討論"]);
+    return rows.slice(0,5);
+  }
+
+  if(code === "Sub"){
+    if(isTourism){
+      add(["觀光補給外帶組合","回應旅客快速補給、同行分食與好帶走需求","外帶包裝、多人分享餐、清楚套餐","需避免品項太複雜、影響出餐速度","觀光時段交易數／分享餐銷售","建議優先"]);
+      add(["地方活動／節慶快閃攤位","抓住地方活動或節慶人流，創造接觸與銷售","外部攤位、披薩切片、預購或回店優惠","需確認攤位規範、備貨、保溫與結帳流程","現場銷售額／優惠券回收／回店消費","可討論"]);
+    }else{
+      add(["在地熟客回訪日","強化在地熟客關係，創造再次購買理由","熟客名單、會員系統、社群或群組通知","活動規則要簡單，避免增加門店負擔","熟客回訪率／會員新增／指定套餐銷售","建議優先"]);
+      add(["社區預購外帶導流","讓交通不便或人流分散的商圈也能形成訂購","預購表單、外帶套餐、固定取餐時段","需確保取餐時間、備餐量與通知清楚","預購訂單數／外帶占比／取消率","可討論"]);
+    }
+    add(["在地合作試吃活動","讓還不常買的在地顧客開始接觸與嘗試","試吃品項、合作場域、優惠券或會員導流","需確認合作規範、食品安全與成本","試吃人次／名單數／後續訂購","可討論"]);
+    if(isCommunity || has("社群","地方")) add(["在地社群預購日","透過在地社群或地方群組，把接觸轉成預購","社群通知、預購表單、外帶套餐、固定取餐時段","需確認通知內容清楚、備餐量穩定","社群互動／預購單數／取消率","可討論"]);
+    return rows.slice(0,5);
+  }
+
+  // R1 / residential default
+  add(["社區試吃活動","降低第一次嘗試門檻，讓居民先接觸產品","試吃品項、外帶包裝、優惠券或會員導流","需控管成本、食品安全與社區規範","試吃人次／優惠券回收／會員新增","建議優先"]);
+  add(["熟客回訪活動日","創造附近熟客再次購買理由","會員系統、熟客邀請、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"]);
+  add(["預購外帶導流","把社區接觸轉成後續訂購","預購表單、外帶套餐、社群通知","需確保取餐時間與備餐穩定","預購訂單數／外帶占比","建議優先"]);
+  if(isCommunity && !isFastPickup){
+    add(["社區市集擺攤","在社區聚集場景創造接觸與購買","披薩切片、攤位布置、現場銷售話術","需確認攤位、備貨、保溫與結帳流程","現場銷售額／回店消費／社群互動","可討論"]);
+  }
+  if(isFamily && isCommunity && !isFastPickup){
+    add(["親子社區合作挑戰","創造陪伴型家庭客的互動理由","外部場地、社區合作、分享餐","優先使用社區或外部場地，不預設店內久留","活動參與組數／回店消費","可討論"]);
+  }
+  return rows.slice(0,5);
 }
 function toggleCandidate(i){
   if(state.selectedCandidateIndices.includes(i)){
     state.selectedCandidateIndices = state.selectedCandidateIndices.filter(x=>x!==i);
   }else{
-    if(state.selectedCandidateIndices.length >= 3){
-      const target = $("selectedSummary");
-      if(target) target.innerHTML = `<span class="error">最多只能選 3 個候選行動進入評估。</span>`;
-      return;
-    }
     state.selectedCandidateIndices.push(i);
   }
   state.selectedCandidateIndices.sort((a,b)=>a-b);
+  state.data.selectedPlan = null;
   renderCandidateRows();
-  renderEvaluation();
+  $("evaluationBox")?.classList.add("hidden");
+  $("finalBox")?.classList.add("hidden");
+  if($("candidateConfirmMsg")){
+    $("candidateConfirmMsg").innerHTML = '<div class="hint">候選行動選擇已更新，請按下「確認候選行動，進入方案評估」。</div>';
+  }
 }
 function renderCandidateRows(){
   const selected = state.selectedCandidateIndices;
@@ -679,6 +734,21 @@ function renderCandidateRows(){
   const target = $("selectedSummary");
   if(target) target.innerHTML = `<strong>目前選定：</strong>${safe(names)}`;
 }
+
+function confirmCandidates(){
+  const selectedCount = state.selectedCandidateIndices.length;
+  const msg = $("candidateConfirmMsg");
+  if(selectedCount < 2){
+    if(msg) msg.innerHTML = `<div class="error">請至少選出 2 個候選行動，才能進入方案評估。目前已選 ${selectedCount} 個。</div>`;
+    $("evaluationBox")?.classList.add("hidden");
+    $("finalBox")?.classList.add("hidden");
+    return;
+  }
+  if(msg) msg.innerHTML = `<div class="ok">已確認 ${selectedCount} 個候選行動，請往下完成方案評估。</div>`;
+  renderEvaluation();
+  $("evaluationBox")?.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
 function renderCocSheet(finalPlan){
   const s1 = state.data.step1 || {};
   const s2 = state.data.step2 || {};
@@ -714,16 +784,21 @@ function renderCocSheet(finalPlan){
   </div>`;
 }
 async function scoreInput(rowIndex, key){
-  const v = document.querySelector(`input[name="score_${rowIndex}_${key}"]:checked`)?.value;
-  return v ? Number(v) : null;
+  const el = document.querySelector(`input[name="score_${rowIndex}_${key}"]:checked`);
+  if(!el) return null;
+  const n = Number.parseInt(String(el.value), 10);
+  return Number.isFinite(n) ? n : null;
 }
 function getEvaluationScores(){
   const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
   return selected.map((plan, idx)=>{
     const scores = {};
-    evaluationCriteria.forEach(c=>scores[c.key] = scoreInput(idx, c.key));
-    const complete = evaluationCriteria.every(c=>scores[c.key] !== null);
-    const total = evaluationCriteria.reduce((sum,c)=>sum + (scores[c.key] || 0), 0);
+    evaluationCriteria.forEach(c=>{
+      const n = scoreInput(idx, c.key);
+      scores[c.key] = Number.isFinite(n) ? n : null;
+    });
+    const complete = evaluationCriteria.every(c=>Number.isFinite(scores[c.key]));
+    const total = evaluationCriteria.reduce((sum,c)=>sum + (Number.isFinite(scores[c.key]) ? scores[c.key] : 0), 0);
     return {plan, idx, originalIndex: state.selectedCandidateIndices[idx], scores, complete, total};
   });
 }
@@ -746,9 +821,9 @@ function decideWinner(evals){
 }
 function renderEvaluation(){
   const selectedCount = state.selectedCandidateIndices.length;
-  if(selectedCount < 2 || selectedCount > 3){
+  if(selectedCount < 2){
     $("evaluationBox").classList.remove("hidden");
-    $("evaluationBox").innerHTML = `<div class="error">請先在候選行動表格中選出 2–3 個候選行動進入評估。目前已選 ${selectedCount} 個。</div>`;
+    $("evaluationBox").innerHTML = `<div class="error">請先在候選行動表格中選出至少 2 個候選行動進入評估。目前已選 ${selectedCount} 個。</div>`;
     $("finalBox").classList.add("hidden");
     return;
   }
@@ -836,8 +911,8 @@ function manualSelectWinner(idx){
 }
 async function makeFinal(){
   const evals = getEvaluationScores();
-  if(state.selectedCandidateIndices.length < 2 || state.selectedCandidateIndices.length > 3){
-    $("finalResult").innerHTML = `<div class="error">請先選出 2–3 個候選行動進入方案評估。</div>`;
+  if(state.selectedCandidateIndices.length < 2){
+    $("finalResult").innerHTML = `<div class="error">請先選出至少 2 個候選行動進入方案評估。</div>`;
     return;
   }
   if(!evals.every(e=>e.complete)){
@@ -951,15 +1026,20 @@ $("makeConstraints")?.addEventListener("click", async ()=>{
 function makeCandidates(){
   state.candidates = buildCandidates();
   state.selectedCandidateIndices = [];
-  state.done[4] = true;
+  state.done[4] = false;
   state.data.step4 = {candidates:state.candidates};
   $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
     <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>
     <tbody id="candidateTableBody"></tbody>
-    </table><p class="hint">請選出 2–3 個最想採用或發展的候選行動，進入方案評估。請直接點選表格中的編號。</p></div>`;
-  $("evaluationBox").classList.remove("hidden");
-  $("evaluationBox").innerHTML = `<div class="hint">請先選出 2–3 個候選行動，系統會產生方案評估表。</div>`;
+    </table><p class="hint">請選出至少 2 個想採用或發展的候選行動，進入方案評估。所有被選定的候選行動，都會進入下一步評估。</p>
+    <div id="selectedSummary" class="selected-summary">尚未選擇</div>
+    <div class="actions"><button class="primary" type="button" onclick="confirmCandidates()">確認候選行動，進入方案評估</button></div>
+    <div id="candidateConfirmMsg"></div>
+  </div>`;
+  $("evaluationBox").classList.add("hidden");
+  $("evaluationBox").innerHTML = "";
   $("finalBox").classList.add("hidden");
+  $("finalBox").innerHTML = "";
   renderCandidateRows();
   renderStages();
 }
