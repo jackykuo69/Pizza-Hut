@@ -1,1 +1,63 @@
-<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>COC 講師後台</title><style>body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:#f3f5f7;color:#172033}main{max-width:1180px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}h1{margin:0 0 8px}.hint{color:#667085;line-height:1.6}.panel{background:#fff;border:1px solid #d0d5dd;border-radius:14px;padding:18px;margin-top:16px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}button{border:0;background:#62a53a;color:#fff;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.secondary{border:1px solid #d0d5dd;background:#fff;color:#172033}table{border-collapse:collapse;width:100%;font-size:14px}th{background:#62a53a;color:#fff;text-align:left;padding:10px;border:1px solid #79b25b}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fafcf9}.warn{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;border-radius:10px;padding:12px;margin-top:10px}.pill{display:inline-block;background:#eef7e8;color:#3e7f24;border-radius:999px;padding:3px 8px;font-weight:800;font-size:12px}</style></head><body><main><div class="top"><div><h1>COC 講師後台</h1><div class="hint">查看各組填寫進度與商圈分類。正式課程需連接 Cloudflare D1 才能跨裝置收集所有小組資料。</div></div><a href="/" class="hint">返回學員端</a></div><div class="warn">若尚未設定 Cloudflare D1，本頁只會顯示同一瀏覽器 localStorage 的測試資料；正式上課請完成 D1 綁定。</div><div class="panel"><div class="actions"><button id="refresh">重新整理</button><button class="secondary" id="download">下載 CSV</button></div><div id="status" class="hint"></div><div style="overflow:auto"><table id="tbl"><thead><tr><th>組別</th><th>門店</th><th>商圈類型</th><th>細分情境</th><th>目前階段</th><th>完成狀態</th><th>更新時間</th></tr></thead><tbody></tbody></table></div></div></main><script>let rows=[];function parseStatus(s){try{const o=typeof s==='string'?JSON.parse(s):s;return Object.keys(o||{}).filter(k=>o[k]).map(k=>'Step '+k).join('、')||'尚未完成';}catch(e){return s||'尚未完成'}}async function load(){const status=document.getElementById('status');try{const r=await fetch('/api/submissions');const j=await r.json();if(!j.ok)throw new Error(j.error||'API 尚未可用');rows=j.items||[];status.innerHTML=`後端資料庫：<span class="pill">已連線</span>，共 ${rows.length} 組資料`;}catch(e){rows=JSON.parse(localStorage.getItem('coc_submissions')||'[]');status.innerHTML=`後端資料庫尚未連線，改讀本機測試資料，共 ${rows.length} 組資料。`;}render()}function render(){document.querySelector('#tbl tbody').innerHTML=rows.map(r=>`<tr><td>${r.group_name||''}</td><td>${r.store_name||''}</td><td>${r.district_type||''}</td><td>${r.district_subtype||''}</td><td>${r.current_stage||0}</td><td>${parseStatus(r.stage_status)}</td><td>${r.updated_at||''}</td></tr>`).join('')}function csv(){const head=['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間'];const lines=[head.join(',')].concat(rows.map(r=>[r.group_name,r.store_name,r.district_type,r.district_subtype,r.current_stage,parseStatus(r.stage_status),r.updated_at].map(v=>'"'+String(v||'').replaceAll('"','""')+'"').join(',')));const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='COC_groups.csv';a.click();URL.revokeObjectURL(a.href)}document.getElementById('refresh').addEventListener('click',load);document.getElementById('download').addEventListener('click',csv);load();</script></body></html>
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>COC 講師後台</title><style>body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:#f3f5f7;color:#172033}main{max-width:1180px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center}h1{margin:0 0 8px}.hint{color:#667085;line-height:1.6}.panel{background:#fff;border:1px solid #d0d5dd;border-radius:14px;padding:18px;margin-top:16px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}button{border:0;background:#62a53a;color:#fff;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.secondary{border:1px solid #d0d5dd;background:#fff;color:#172033}table{border-collapse:collapse;width:100%;font-size:14px}th{background:#62a53a;color:#fff;text-align:left;padding:10px;border:1px solid #79b25b}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fafcf9}.warn{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;border-radius:10px;padding:12px;margin-top:10px}.pill{display:inline-block;background:#eef7e8;color:#3e7f24;border-radius:999px;padding:3px 8px;font-weight:800;font-size:12px}
+    .admin-gate{max-width:520px;margin:80px auto;background:#fff;border:1px solid #d0d5dd;border-radius:16px;padding:28px;box-shadow:0 10px 30px rgba(16,24,40,.08)}
+    .admin-gate h1{font-size:26px;margin:0 0 8px;color:#172033}
+    .admin-gate p{color:#667085;line-height:1.6}
+    .admin-gate input{width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:12px;font-size:16px;margin:10px 0}
+    .admin-gate button{border:0;background:#62a53a;color:#fff;font-weight:800;border-radius:10px;padding:11px 18px;cursor:pointer;font-size:15px}
+    .admin-gate .error{color:#b42318;font-weight:800;margin-top:10px}
+    
+
+    :root{--ph-red:#e31b23;--ph-red-soft:#fff1f1;--ph-red-line:#f3c7c9;--ph-bg:#faf7f5;}
+    body{background:var(--ph-bg)}
+    .admin-gate button{background:var(--ph-red)!important}
+    .admin-gate{border-color:var(--ph-red-line);background:#fff}
+    
+</style></head><body><main><div class="top"><div><h1>COC 講師後台</h1><div class="hint">查看各組填寫進度與商圈分類。正式課程需連接 Cloudflare D1 才能跨裝置收集所有小組資料。</div></div><a href="/" class="hint">返回學員端</a></div><div class="warn">若尚未設定 Cloudflare D1，本頁只會顯示同一瀏覽器 localStorage 的測試資料；正式上課請完成 D1 綁定。</div><div class="panel"><div class="actions"><button id="refresh">重新整理</button><button class="secondary" id="download">下載 CSV</button></div><div id="status" class="hint"></div><div style="overflow:auto"><table id="tbl"><thead><tr><th>組別</th><th>門店</th><th>商圈類型</th><th>細分情境</th><th>目前階段</th><th>完成狀態</th><th>更新時間</th></tr></thead><tbody></tbody></table></div></div></main><script>let rows=[];function parseStatus(s){try{const o=typeof s==='string'?JSON.parse(s):s;return Object.keys(o||{}).filter(k=>o[k]).map(k=>'Step '+k).join('、')||'尚未完成';}catch(e){return s||'尚未完成'}}async function load(){const status=document.getElementById('status');try{const r=await fetch('/api/submissions');const j=await r.json();if(!j.ok)throw new Error(j.error||'API 尚未可用');rows=j.items||[];status.innerHTML=`後端資料庫：<span class="pill">已連線</span>，共 ${rows.length} 組資料`;}catch(e){rows=JSON.parse(localStorage.getItem('coc_submissions')||'[]');status.innerHTML=`後端資料庫尚未連線，改讀本機測試資料，共 ${rows.length} 組資料。`;}render()}function render(){document.querySelector('#tbl tbody').innerHTML=rows.map(r=>`<tr><td>${r.group_name||''}</td><td>${r.store_name||''}</td><td>${r.district_type||''}</td><td>${r.district_subtype||''}</td><td>${r.current_stage||0}</td><td>${parseStatus(r.stage_status)}</td><td>${r.updated_at||''}</td></tr>`).join('')}function csv(){const head=['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間'];const lines=[head.join(',')].concat(rows.map(r=>[r.group_name,r.store_name,r.district_type,r.district_subtype,r.current_stage,parseStatus(r.stage_status),r.updated_at].map(v=>'"'+String(v||'').replaceAll('"','""')+'"').join(',')));const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='COC_groups.csv';a.click();URL.revokeObjectURL(a.href)}document.getElementById('refresh').addEventListener('click',load);document.getElementById('download').addEventListener('click',csv);load();</script>
+<script>
+(function(){
+  const ADMIN_PASSWORD = "coc-admin";
+  function showAdmin(){
+    const gate = document.getElementById("adminGate");
+    const content = document.getElementById("adminContent");
+    if(gate) gate.style.display = "none";
+    if(content) content.style.display = "";
+  }
+  window.checkAdminPassword = function(){
+    const input = document.getElementById("adminPassword");
+    const msg = document.getElementById("adminLoginMsg");
+    if((input.value || "").trim() === ADMIN_PASSWORD){
+      sessionStorage.setItem("cocAdminAuthed","1");
+      showAdmin();
+    }else{
+      msg.textContent = "密碼不正確，請確認後台密碼。";
+    }
+  };
+  document.addEventListener("DOMContentLoaded", function(){
+    const bodyChildren = Array.from(document.body.children);
+    const wrapper = document.createElement("div");
+    wrapper.id = "adminContent";
+    wrapper.style.display = "none";
+    bodyChildren.forEach(el => {
+      if(el.id !== "adminGate") wrapper.appendChild(el);
+    });
+    document.body.appendChild(wrapper);
+
+    const gate = document.createElement("div");
+    gate.id = "adminGate";
+    gate.className = "admin-gate";
+    gate.innerHTML = `
+      <h1>COC 講師後台</h1>
+      <p>此頁僅供講師與工作人員使用。請輸入後台密碼。</p>
+      <input id="adminPassword" type="password" placeholder="請輸入後台密碼" onkeydown="if(event.key==='Enter') checkAdminPassword()">
+      <button onclick="checkAdminPassword()">進入後台</button>
+      <div id="adminLoginMsg" class="error"></div>
+      <p style="font-size:13px;margin-top:16px;">課堂 MVP 預設密碼：coc-admin。正式課程建議改為 Cloudflare Access 或動態密碼。</p>
+    `;
+    document.body.insertBefore(gate, wrapper);
+
+    if(sessionStorage.getItem("cocAdminAuthed")==="1") showAdmin();
+  });
+})();
+</script>
+
+</body></html>
