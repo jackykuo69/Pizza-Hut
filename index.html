@@ -99,10 +99,12 @@
 </main>
 
 
+
 <script>
 const codes = {1:"看見顧客", 2:"盤點我們", 3:"看懂限制", 4:"設計行動"};
 const state = {
-  id: crypto.randomUUID(), // 每次開啟頁面建立新資料，避免不同組別共用同一台裝置時互相覆蓋
+  id: sessionStorage.getItem("coc_submission_id") || crypto.randomUUID(),
+  submissionKey: sessionStorage.getItem("coc_submission_key") || "",
   unlocked: 0,
   current: 0,
   done: {},
@@ -112,6 +114,7 @@ const state = {
   selectedCandidateIndices: [],
   data: {}
 };
+sessionStorage.setItem("coc_submission_id", state.id);
 
 const stages = [
   ["Step 0","小組資料","可直接填寫"],
@@ -124,6 +127,29 @@ const stages = [
 function $(id){ return document.getElementById(id); }
 function safe(v){
   return String(v ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
+}
+function currentKey(){
+  return [
+    ($("groupName")?.value || "").trim(),
+    ($("storeName")?.value || "").trim(),
+    state.district?.code || "",
+    state.subtype || ""
+  ].join("|");
+}
+function ensureSubmissionId(){
+  const key = currentKey();
+  if(!state.submissionKey){
+    state.submissionKey = key;
+    sessionStorage.setItem("coc_submission_key", key);
+    sessionStorage.setItem("coc_submission_id", state.id);
+    return;
+  }
+  if(key && state.submissionKey !== key){
+    state.id = crypto.randomUUID();
+    state.submissionKey = key;
+    sessionStorage.setItem("coc_submission_id", state.id);
+    sessionStorage.setItem("coc_submission_key", key);
+  }
 }
 function checked(key){
   return Array.from(document.querySelectorAll(`.choices[data-key="${key}"] input[type="checkbox"]:checked`)).map(i=>{
@@ -189,6 +215,7 @@ function showStep(n){
   window.scrollTo({top:0, behavior:"smooth"});
 }
 async function saveProgress(stage){
+  ensureSubmissionId();
   const payload = {
     id: state.id,
     group_name: $("groupName")?.value || "",
@@ -361,81 +388,50 @@ function buildCandidates(){
   }
   return rows.slice(0,6);
 }
-function renderCandidateButtons(){
+function toggleCandidate(i){
+  if(state.selectedCandidateIndices.includes(i)){
+    state.selectedCandidateIndices = state.selectedCandidateIndices.filter(x=>x!==i);
+  }else{
+    state.selectedCandidateIndices.push(i);
+  }
+  state.selectedCandidateIndices.sort((a,b)=>a-b);
+  renderCandidateRows();
+}
+function renderCandidateRows(){
   const selected = state.selectedCandidateIndices;
-  const buttons = state.candidates.map((r,i)=>{
-    const selectedClass = selected.includes(i) ? " selected" : "";
-    return `<button type="button" class="candidate-select-btn${selectedClass}" data-candidate="${i}">${i+1}</button>`;
+  const tableRows = state.candidates.map((r,i)=>{
+    const sel = selected.includes(i) ? " selected" : "";
+    return `<tr><td><button type="button" class="candidate-select-btn${sel}" onclick="toggleCandidate(${i})">${i+1}</button></td><td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td><td>${safe(r[5])}</td></tr>`;
   }).join("");
+  $("candidateTableBody").innerHTML = tableRows;
   const names = selected.map(i=>`${i+1}. ${state.candidates[i]?.[0] || ""}`).filter(Boolean).join("、") || "尚未選擇";
-  $("candidateSelectBox").innerHTML = `
-    <div class="candidate-select-wrap">${buttons}</div>
-    <div class="selected-summary"><strong>目前選定：</strong>${safe(names)}</div>
-    <div class="actions"><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div>
-  `;
-  document.querySelectorAll("[data-candidate]").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const i = Number(btn.dataset.candidate);
-      if(state.selectedCandidateIndices.includes(i)){
-        state.selectedCandidateIndices = state.selectedCandidateIndices.filter(x=>x!==i);
-      }else{
-        state.selectedCandidateIndices.push(i);
-      }
-      state.selectedCandidateIndices.sort((a,b)=>a-b);
-      renderCandidateButtons();
-    });
-  });
-  $("makeFinal")?.addEventListener("click", makeFinal);
+  $("selectedSummary").innerHTML = `<strong>目前選定：</strong>${safe(names)}`;
+}
+function cocList(items){
+  if(!Array.isArray(items) || !items.length) return "<div class='hint'>尚未填寫</div>";
+  return `<ul>${items.map(x=>`<li>${safe(x)}</li>`).join("")}</ul>`;
 }
 function renderCocSheet(rows){
   const s1 = state.data.step1 || {};
   const s2 = state.data.step2 || {};
   const s3 = state.data.step3 || {};
   const selected = rows || [];
+  const noteHtml = (s2.note || "").trim()
+    ? `<strong>補充做法／優勢／盲點</strong><div>${safe(s2.note)}</div>`
+    : "";
   return `<div class="result coc-sheet">
-    <div class="coc-sheet-head">
-      <div>
-        <h3>COC 商圈活動脈絡策劃表</h3>
-        <div class="hint">將前三階段 COC 診斷與最後選定行動整合成一張表，供課堂討論與後續整理使用。</div>
-      </div>
-      <img class="coc-sheet-logo" src="./assets/pizza-logo.png" alt="Pizza Hut logo">
-    </div>
+    <div class="coc-sheet-head"><div><h3>COC 商圈活動脈絡策劃表</h3><div class="hint">將前三階段 COC 診斷與最後選定行動整合成一張表，供課堂討論與後續整理使用。</div></div><img class="coc-sheet-logo" src="./assets/pizza-logo.png" alt="Pizza Hut logo"></div>
     <table class="coc-table">
-      <tr>
-        <th style="width:120px"></th>
-        <th>消費者痛點與需求</th>
-        <th>組織既有資源與做法</th>
-        <th>條件與限制</th>
-      </tr>
-      <tr>
-        <td class="coc-rowhead">方案要素分析</td>
-        <td>
-          <strong>目標顧客</strong>${cocList(s1.customers)}
-          <strong>需求／相對價值</strong>${cocList(s1.value)}
-          <strong>痛點或限制感受</strong>${cocList(s1.limits)}
-        </td>
-        <td>
-          <strong>既有資源</strong>${cocList(s2.resources)}
-          <strong>補充做法／優勢／盲點</strong><div>${safe(s2.note || "尚未補充")}</div>
-        </td>
-        <td>
-          <strong>條件與限制</strong>${cocList(s3.constraints)}
-          <strong>處理方向</strong>${cocList(s3.directions)}
-        </td>
-      </tr>
-      <tr>
-        <td class="coc-rowhead">方案擬定</td>
-        <td colspan="3">
-          ${selected.length ? `<ol>${selected.map(r=>`<li><strong>${safe(r[0])}</strong>：${safe(r[1])}；運用 ${safe(r[2])}；需注意 ${safe(r[3])}；觀察 ${safe(r[4])}。</li>`).join("")}</ol>` : "<div class='hint'>尚未選定行動。</div>"}
-        </td>
-      </tr>
+      <tr><th style="width:120px"></th><th>消費者痛點與需求</th><th>組織既有資源與做法</th><th>條件與限制</th></tr>
+      <tr><td class="coc-rowhead">方案要素分析</td><td><strong>目標顧客</strong>${cocList(s1.customers)}<strong>需求／相對價值</strong>${cocList(s1.value)}<strong>痛點或限制感受</strong>${cocList(s1.limits)}</td><td><strong>既有資源</strong>${cocList(s2.resources)}${noteHtml}</td><td><strong>條件與限制</strong>${cocList(s3.constraints)}<strong>處理方向</strong>${cocList(s3.directions)}</td></tr>
+      <tr><td class="coc-rowhead">方案擬定</td><td colspan="3">${selected.length ? `<ol>${selected.map(r=>`<li><strong>${safe(r[0])}</strong>：${safe(r[1])}；運用 ${safe(r[2])}；需注意 ${safe(r[3])}；觀察 ${safe(r[4])}。</li>`).join("")}</ol>` : "<div class='hint'>尚未選定行動。</div>"}</td></tr>
     </table>
   </div>`;
 }
 async function makeFinal(){
   const rows = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
   if(rows.length < 2 || rows.length > 3){
-    $("finalResult").innerHTML = `<div class="error">請直接點選上方候選行動編號，選出 2–3 個候選行動。目前已選 ${rows.length} 個；可選編號為 1–${state.candidates.length}。</div>`;
+    $("finalResult").innerHTML = `<div class="error">請直接點選表格中的候選行動編號，並選出 2–3 個候選行動。目前已選 ${rows.length} 個；可選編號為 1–${state.candidates.length}。</div>`;
     return;
   }
   state.data.final = rows;
@@ -446,7 +442,7 @@ async function makeFinal(){
     ${rows.map(r=>`<tr><td>${safe(r[0])}</td><td>先小規模試行，確認人力、動線、規則與成本可控後再放大。</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td></tr>`).join("")}
     </table></div>`;
   const exportBox = `<div class="export-actions no-print"><button class="primary" type="button" onclick="window.print()">匯出／列印 PDF</button><span class="hint">點選後請在列印視窗選擇「另存為 PDF」。</span></div>
-    <div class="gate"><h3>第四階段已完成</h3><p>請人工檢查這些行動是否符合品牌規範、門市人力、取餐與外送動線，以及實際可行性。後續請等待講師指示。</p></div>`;
+  <div class="gate"><h3>第四階段已完成</h3><p>請人工檢查這些行動是否符合品牌規範、門市人力、取餐與外送動線，以及實際可行性。後續請等待講師指示。</p></div>`;
   $("finalResult").innerHTML = cocSheet + actionTable + exportBox;
 }
 
@@ -484,7 +480,7 @@ $("makePersona")?.addEventListener("click", async ()=>{
   await saveProgress(1);
   $("personaResult").innerHTML = `<div class="result"><h3>AI 產出：3 種目標客群情境（原型示意）</h3>
     <table><tr><th>目標客群名稱</th><th>這群顧客是誰</th><th>何時出現／被接觸</th><th>可能選擇我們的理由</th><th>是否適合發展</th></tr>
-    <tr><td>${safe(customers[0])}主軸</td><td>${safe(state.district.code)}｜${safe(state.subtype)}中的${safe(customers[0])}</td><td>特定時段、社區活動或取餐情境</td><td>${safe(value.join("、"))}</td><td>適合，可作為主軸</td></tr>
+    <tr><td>選定目標顧客主軸</td><td>${safe(state.district.code)}｜${safe(state.subtype)}中的：${safe(customers.join("、"))}</td><td>特定時段、社區活動或取餐情境</td><td>${safe(value.join("、"))}</td><td>適合，作為後續方案判斷基礎</td></tr>
     <tr><td>熟客回訪型</td><td>已知道門店、但需要新理由再購買的顧客</td><td>平日、假日或會員通知後</td><td>熟悉安心、規則簡單</td><td>可討論</td></tr>
     <tr><td>新接觸型</td><td>尚未形成購買習慣、需要降低嘗試門檻的顧客</td><td>社區試吃、市集或外部合作場域</td><td>降低嘗試門檻，導入後續外帶或預購</td><td>適合搭配外展</td></tr>
     </table>${completionGate(1,2)}</div>`;
@@ -500,10 +496,10 @@ $("makeResources")?.addEventListener("click", async ()=>{
   state.done[2] = true;
   state.data.step2 = {resources, note};
   await saveProgress(2);
+  const noteRow = note ? `<tr><td>補充內容</td><td>${safe(note)}</td><td>需對照第一階段目標客群</td><td>避免只是照總部活動執行，需依商圈微調</td></tr>` : "";
   $("resourcesResult").innerHTML = `<div class="result"><h3>AI 整理：資源與做法</h3>
     <table><tr><th>類別</th><th>使用者選定內容</th><th>是否對上目標客群需求</th><th>可放大或需調整之處</th></tr>
-    <tr><td>既有資源</td><td>${tags(resources)}</td><td>可協助降低嘗試門檻、強化外帶或回訪</td><td>優先挑選店長可控、成本可控、可快速試行的資源</td></tr>
-    <tr><td>補充內容</td><td>${safe(note || "尚未補充")}</td><td>需對照第一階段目標客群</td><td>避免只是照總部活動執行，需依商圈微調</td></tr>
+    <tr><td>既有資源</td><td>${tags(resources)}</td><td>可協助降低嘗試門檻、強化外帶或回訪</td><td>優先挑選店長可控、成本可控、可快速試行的資源</td></tr>${noteRow}
     </table>${completionGate(2,3)}</div>`;
   renderStages();
   bindUnlocks();
@@ -536,11 +532,12 @@ $("makeCandidates")?.addEventListener("click", async ()=>{
   await saveProgress(4);
   $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
     <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>
-    ${state.candidates.map((r,i)=>`<tr><td>${i+1}</td><td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td><td>${safe(r[5])}</td></tr>`).join("")}
-    </table><p class="hint">請選出 2–3 個最想採用或發展的候選行動。</p></div>`;
+    <tbody id="candidateTableBody"></tbody>
+    </table><p class="hint">請選出 2–3 個最想採用或發展的候選行動。請直接點選表格中的編號。</p></div>`;
   $("finalBox").classList.remove("hidden");
-  $("finalBox").innerHTML = `<h3>選定候選行動</h3><p class="hint">請直接點選候選行動編號，可選編號為 1–${state.candidates.length}。</p><div id="candidateSelectBox"></div><div id="finalResult"></div>`;
-  renderCandidateButtons();
+  $("finalBox").innerHTML = `<h3>選定候選行動</h3><div id="selectedSummary" class="selected-summary">尚未選擇</div><div class="actions"><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div>`;
+  renderCandidateRows();
+  $("makeFinal")?.addEventListener("click", makeFinal);
   renderStages();
 });
 
@@ -548,6 +545,7 @@ bindUnlocks();
 renderStages();
 bindOtherInputs();
 </script>
+
 
 
 </body>
