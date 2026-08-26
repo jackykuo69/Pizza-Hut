@@ -54,7 +54,7 @@
   <div class="panel">
     <div class="actions">
       <button id="refresh">重新整理</button>
-      <button class="secondary" id="download">下載 CSV</button>
+      <button class="secondary" id="download">下載完整 Excel</button>
     </div>
     <div id="status" class="hint"></div>
     <div style="overflow:auto">
@@ -92,6 +92,9 @@ let usingBackend = false;
 function escapeHtml(v){
   return String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
+function escapeXml(v){
+  return String(v ?? '').replace(/[<>&'"]/g, s => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[s]));
+}
 function parseJson(v, fallback = {}){
   try { return typeof v === 'string' ? JSON.parse(v || '{}') : (v || fallback); }
   catch(e){ return fallback; }
@@ -106,6 +109,28 @@ function currentStageLabel(n){
   const map = {0:'Step 0',1:'Step 1',2:'Step 2',3:'Step 3',4:'Step 4'};
   return map[n] || n || 0;
 }
+function arrText(v){
+  if(Array.isArray(v)) return v.filter(x => x !== undefined && x !== null && String(x).trim() !== '').join('；');
+  return v ? String(v) : '';
+}
+function normalizePlan(plan){
+  if(!Array.isArray(plan) || !plan.length) return [];
+  if(Array.isArray(plan[0])) return plan;
+  if(typeof plan[0] === 'string') return [plan];
+  if(plan.plan && Array.isArray(plan.plan)) return [plan.plan];
+  return [];
+}
+function getFinalPlan(data){
+  const finalPlans = normalizePlan(data.final);
+  if(finalPlans.length) return finalPlans[0];
+  const selectedPlans = normalizePlan(data.selectedPlan);
+  if(selectedPlans.length) return selectedPlans[0];
+  return null;
+}
+function safePlanCell(plan, idx){
+  return Array.isArray(plan) ? (plan[idx] || '') : '';
+}
+
 async function load(){
   const status = document.getElementById('status');
   try{
@@ -147,61 +172,117 @@ function list(items){
   if(!Array.isArray(items) || !items.length) return '<div class="hint">無資料</div>';
   return `<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
 }
+function kv(label, content){
+  return `<div class="kv"><strong>${escapeHtml(label)}</strong><div>${content}</div></div>`;
+}
+function renderCandidateTable(candidates){
+  if(!Array.isArray(candidates) || !candidates.length) return '<div class="hint">無資料</div>';
+  return `<table>
+    <thead><tr><th>候選行動</th><th>回應需求</th><th>資源做法</th><th>需注意限制</th><th>觀察指標</th></tr></thead>
+    <tbody>${candidates.map(r=>`
+      <tr>
+        <td>${escapeHtml(r?.[0])}</td>
+        <td>${escapeHtml(r?.[1])}</td>
+        <td>${escapeHtml(r?.[2])}</td>
+        <td>${escapeHtml(r?.[3])}</td>
+        <td>${escapeHtml(r?.[4])}</td>
+      </tr>`).join('')}</tbody>
+  </table>`;
+}
+function renderEvaluationTable(evaluation, selectedPlan){
+  if(!Array.isArray(evaluation) || !evaluation.length) return '<div class="hint">無資料</div>';
+  const selectedName = Array.isArray(selectedPlan) ? selectedPlan[0] : '';
+  return `<table>
+    <thead><tr><th>候選方案</th><th>效益</th><th>可行性</th><th>成本</th><th>風險性</th><th>測試性</th><th>總分</th><th>是否當選</th></tr></thead>
+    <tbody>${evaluation.map(e=>{
+      const plan = Array.isArray(e.plan) ? e.plan : [];
+      const s = e.scores || {};
+      const isWinner = selectedName && plan[0] === selectedName;
+      return `<tr>
+        <td>${escapeHtml(plan[0])}</td>
+        <td>${escapeHtml(s.benefit)}</td>
+        <td>${escapeHtml(s.feasibility)}</td>
+        <td>${escapeHtml(s.cost)}</td>
+        <td>${escapeHtml(s.risk)}</td>
+        <td>${escapeHtml(s.testability)}</td>
+        <td>${escapeHtml(e.total)}</td>
+        <td>${isWinner ? '◎ 當選' : ''}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+function renderFinalPlan(plan){
+  const plans = normalizePlan(plan);
+  if(!plans.length) return '<div class="hint">無資料</div>';
+  return `<table>
+    <thead><tr><th>行動</th><th>回應需求</th><th>資源做法</th><th>需注意限制</th><th>觀察指標</th></tr></thead>
+    <tbody>${plans.map(r=>`
+      <tr>
+        <td>${escapeHtml(r?.[0])}</td>
+        <td>${escapeHtml(r?.[1])}</td>
+        <td>${escapeHtml(r?.[2])}</td>
+        <td>${escapeHtml(r?.[3])}</td>
+        <td>${escapeHtml(r?.[4])}</td>
+      </tr>`).join('')}</tbody>
+  </table>`;
+}
 function renderData(data){
   let html = '';
   if(data.step1){
     html += section('Step 1｜顧客需求與痛點', `
-      <div class="kv"><strong>門市限制</strong><div>${list(data.step1.limits)}</div></div>
-      <div class="kv"><strong>目標顧客</strong><div>${list(data.step1.customers)}</div></div>
-      <div class="kv"><strong>相對價值</strong><div>${list(data.step1.value)}</div></div>
+      ${kv('目標顧客', list(data.step1.customers))}
+      ${kv('出現情境', list(data.step1.contexts))}
+      ${kv('需求與痛點', list(data.step1.pains))}
+      ${kv('可能選擇我們的理由', list(data.step1.value))}
+      ${data.step1.limits ? kv('門市限制', list(data.step1.limits)) : ''}
     `);
   }
   if(data.step2){
     html += section('Step 2｜資源與做法', `
-      <div class="kv"><strong>既有資源</strong><div>${list(data.step2.resources)}</div></div>
-      <div class="kv"><strong>補充內容</strong><div>${escapeHtml(data.step2.note || '')}</div></div>
+      ${kv('既有資源', list(data.step2.resources))}
+      ${kv('補充做法／優勢／盲點', escapeHtml(data.step2.note || ''))}
     `);
   }
   if(data.step3){
     html += section('Step 3｜條件與限制', `
-      <div class="kv"><strong>限制條件</strong><div>${list(data.step3.constraints)}</div></div>
-      <div class="kv"><strong>處理方向</strong><div>${list(data.step3.directions)}</div></div>
+      ${kv('條件與限制', list(data.step3.constraints))}
+      ${kv('造成的影響', list(data.step3.impacts))}
+      ${kv('相對價值或處理方向', list(data.step3.directions))}
     `);
   }
   if(data.step4?.candidates){
-    html += section('Step 4｜候選行動', `
-      <table>
-        <thead><tr><th>候選行動</th><th>回應需求</th><th>資源做法</th><th>限制</th><th>指標</th><th>判斷</th></tr></thead>
-        <tbody>${data.step4.candidates.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
-      </table>
-    `);
+    html += section('Step 4｜候選行動', renderCandidateTable(data.step4.candidates));
   }
-  if(data.final){
-    html += section('最終選定行動', `
-      <table>
-        <thead><tr><th>行動</th><th>回應需求</th><th>資源做法</th><th>限制</th><th>指標</th><th>判斷</th></tr></thead>
-        <tbody>${data.final.map(r=>`<tr>${r.map(c=>`<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody>
-      </table>
-    `);
+  if(data.evaluation){
+    html += section('方案評估', renderEvaluationTable(data.evaluation, data.selectedPlan || data.final));
+  }
+  const finalPlan = data.final || data.selectedPlan;
+  if(finalPlan){
+    html += section('最終選定行動', renderFinalPlan(finalPlan));
   }
   if(!html) html = '<div class="hint">尚無詳細填寫內容。</div>';
   html += section('原始資料', `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`);
   return html;
 }
 function viewRow(i){
-  const r = rows[i];
-  const data = parseJson(r.data, {});
-  document.getElementById('detailBody').innerHTML = `
-    <div class="kv"><strong>組別</strong><div>${escapeHtml(r.group_name)}</div></div>
-    <div class="kv"><strong>門店</strong><div>${escapeHtml(r.store_name)}</div></div>
-    <div class="kv"><strong>商圈類型</strong><div>${escapeHtml(r.district_type)}</div></div>
-    <div class="kv"><strong>細分情境</strong><div>${escapeHtml(r.district_subtype)}</div></div>
-    <div class="kv"><strong>目前階段</strong><div>${escapeHtml(currentStageLabel(r.current_stage))}</div></div>
-    <div class="kv"><strong>完成狀態</strong><div>${escapeHtml(parseStatus(r.stage_status))}</div></div>
-    <div class="kv"><strong>更新時間</strong><div>${escapeHtml(r.updated_at)}</div></div>
-    ${renderData(data)}
-  `;
-  document.getElementById('detailDialog').showModal();
+  try{
+    const r = rows[i];
+    const data = parseJson(r.data, {});
+    document.getElementById('detailBody').innerHTML = `
+      ${kv('組別', escapeHtml(r.group_name))}
+      ${kv('門店', escapeHtml(r.store_name))}
+      ${kv('商圈類型', escapeHtml(r.district_type))}
+      ${kv('細分情境', escapeHtml(r.district_subtype))}
+      ${kv('目前階段', escapeHtml(currentStageLabel(r.current_stage)))}
+      ${kv('完成狀態', escapeHtml(parseStatus(r.stage_status)))}
+      ${kv('更新時間', escapeHtml(r.updated_at))}
+      ${renderData(data)}
+    `;
+    document.getElementById('detailDialog').showModal();
+  }catch(err){
+    alert('查看資料時發生錯誤：' + (err.message || err));
+    console.error(err);
+  }
 }
 async function deleteRow(i){
   const r = rows[i];
@@ -221,26 +302,80 @@ async function deleteRow(i){
   }
   await load();
 }
-function csv(){
-  const head = ['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間'];
-  const lines = [head.join(',')].concat(rows.map(r => [
-    r.group_name,
-    r.store_name,
-    r.district_type,
-    r.district_subtype,
-    currentStageLabel(r.current_stage),
-    parseStatus(r.stage_status),
-    r.updated_at
-  ].map(v => '"' + String(v || '').replaceAll('"','""') + '"').join(',')));
-  const blob = new Blob(['\ufeff' + lines.join('\n')], {type:'text/csv;charset=utf-8'});
+
+function workbookSheet(name, rows){
+  const safeName = String(name).slice(0,31).replace(/[\\/?*[\]:]/g, '');
+  const xmlRows = rows.map(row => `<Row>${row.map(v => `<Cell><Data ss:Type="String">${escapeXml(v)}</Data></Cell>`).join('')}</Row>`).join('');
+  return `<Worksheet ss:Name="${escapeXml(safeName)}"><Table>${xmlRows}</Table></Worksheet>`;
+}
+function buildExportSheets(){
+  const overview = [['組別','門店','商圈類型','細分情境','目前階段','完成狀態','更新時間']];
+  const coc = [['組別','門店','商圈類型','細分情境','更新時間','目標顧客','出現情境','需求與痛點','可能選擇我們的理由','既有資源','補充做法／優勢／盲點','條件與限制','造成的影響','相對價值或處理方向','最終行動','最終回應需求','最終資源做法','最終限制','最終觀察指標']];
+  const candidates = [['組別','門店','編號','候選行動','回應需求','資源做法','需注意限制','觀察指標']];
+  const evaluation = [['組別','門店','候選方案','效益','可行性','成本','風險性','測試性','總分','是否當選']];
+  const finalActions = [['組別','門店','商圈類型','細分情境','最終行動','具體做法','回應需求','資源做法','條件限制','觀察指標']];
+
+  rows.forEach(r => {
+    const data = parseJson(r.data, {});
+    const plan = getFinalPlan(data);
+    overview.push([r.group_name,r.store_name,r.district_type,r.district_subtype,currentStageLabel(r.current_stage),parseStatus(r.stage_status),r.updated_at]);
+
+    coc.push([
+      r.group_name, r.store_name, r.district_type, r.district_subtype, r.updated_at,
+      arrText(data.step1?.customers), arrText(data.step1?.contexts), arrText(data.step1?.pains), arrText(data.step1?.value),
+      arrText(data.step2?.resources), data.step2?.note || '',
+      arrText(data.step3?.constraints), arrText(data.step3?.impacts), arrText(data.step3?.directions),
+      safePlanCell(plan,0), safePlanCell(plan,1), safePlanCell(plan,2), safePlanCell(plan,3), safePlanCell(plan,4)
+    ]);
+
+    (data.step4?.candidates || []).forEach((c, idx) => {
+      candidates.push([r.group_name, r.store_name, idx+1, c?.[0], c?.[1], c?.[2], c?.[3], c?.[4]]);
+    });
+
+    const selectedName = plan?.[0] || '';
+    (data.evaluation || []).forEach(e => {
+      const p = Array.isArray(e.plan) ? e.plan : [];
+      const s = e.scores || {};
+      evaluation.push([r.group_name, r.store_name, p[0] || '', s.benefit ?? '', s.feasibility ?? '', s.cost ?? '', s.risk ?? '', s.testability ?? '', e.total ?? '', selectedName && p[0] === selectedName ? '當選' : '']);
+    });
+
+    if(plan){
+      finalActions.push([
+        r.group_name, r.store_name, r.district_type, r.district_subtype,
+        safePlanCell(plan,0),
+        '先小規模試行，確認人力、動線、規則與成本可控後再放大。',
+        safePlanCell(plan,1), safePlanCell(plan,2), safePlanCell(plan,3), safePlanCell(plan,4)
+      ]);
+    }
+  });
+
+  return {overview, coc, candidates, evaluation, finalActions};
+}
+function excel(){
+  const sheets = buildExportSheets();
+  const workbook = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ ${workbookSheet('總覽', sheets.overview)}
+ ${workbookSheet('COC完整資料', sheets.coc)}
+ ${workbookSheet('候選行動', sheets.candidates)}
+ ${workbookSheet('方案評估', sheets.evaluation)}
+ ${workbookSheet('最終ActionDesign', sheets.finalActions)}
+</Workbook>`;
+  const blob = new Blob(['\ufeff' + workbook], {type:'application/vnd.ms-excel;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'COC_groups.csv';
+  a.download = 'COC_商圈活動完整資料.xls';
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
 document.getElementById('refresh').addEventListener('click', load);
-document.getElementById('download').addEventListener('click', csv);
+document.getElementById('download').addEventListener('click', excel);
 load();
 </script>
 
