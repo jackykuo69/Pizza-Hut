@@ -56,57 +56,323 @@
     <section id="step4" class="hidden"><h2>Step 4｜設計行動：候選行動與 Action Design</h2><p class="hint">AI 先提出 4–6 個候選行動方向；主管小組再選擇、刪除、合併或修正。</p><div class="actions"><button class="primary" type="button" id="makeCandidates">產出候選行動方向</button></div><div id="candidateResult"></div><div id="finalBox" class="hidden"><h3>選定候選行動</h3><p class="hint">請輸入候選行動編號，可用半形逗號、頓號或空格分隔。建議格式：<strong>1,5</strong> 或 <strong>1、5</strong>。也支援中文數字，例如：<strong>一、五</strong>。</p><input type="text" id="selectedActions" placeholder="例如：1,5 或 1、5 或 一、五"><div class="actions"><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div></div></section>
   </div></div>
 </main>
+
 <script>
-const codes={1:"看見顧客",2:"盤點我們",3:"看懂限制",4:"設計行動"};const state={id:null,unlocked:0,current:0,done:{},district:null,subtype:null,candidates:[],data:{}};const stages=[["Step 0","小組資料","可直接填寫"],["Step 1","看見顧客","等待講師公布"],["Step 2","盤點我們","等待講師公布"],["Step 3","看懂限制","等待講師公布"],["Step 4","設計行動","等待講師公布"]];function $(id){return document.getElementById(id)}function checked(key){return Array.from(document.querySelectorAll(`.choices[data-key="${key}"] input:checked`)).map(i=>i.value)}function tags(items){return(items.length?items:["尚未選擇"]).map(x=>`<span class="tag">${x}</span>`).join("")}
-function renderStages(){$("stageList").innerHTML=stages.map((s,i)=>{const cls=i===state.current?"current":state.done[i]?"done":i>state.unlocked?"locked":"";const icon=i===state.current?"🔓":state.done[i]?"✅":i>state.unlocked?"🔒":"🔓";return`<div class="stage ${cls}"><div class="stage-title">${icon} ${s[0]}｜${s[1]}</div><div class="stage-meta">${s[2]}</div><div class="lock">${i>state.unlocked?"等待講師口令":i===state.current?"目前階段":"已開放"}</div></div>`}).join("")}
-function showStep(n){[0,1,2,3,4].forEach(i=>$("step"+i).classList.add("hidden"));state.current=n;$("step"+n).classList.remove("hidden");if(n===1){renderCurrentDistrict();renderCustomers()}renderStages();window.scrollTo({top:0,behavior:"smooth"})}
-async function saveProgress(stage){const groupName=$("groupName").value||"未填";const storeName=$("storeName").value||"";state.data={...state.data,groupName,storeName,district:state.district,subtype:state.subtype,unlocked:state.unlocked,currentStage:stage,done:state.done,updatedAt:new Date().toISOString()};if(!state.id){state.id=`${Date.now()}-${Math.random().toString(16).slice(2)}`}const payload={id:state.id,group_name:groupName,store_name:storeName,district_type:state.district?.code||"",district_subtype:state.subtype||"",current_stage:stage,stage_status:JSON.stringify(state.done),data:JSON.stringify(state.data)};try{const r=await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const j=await r.json();if(!j.ok) throw new Error(j.error||'api failed');}catch(e){const all=JSON.parse(localStorage.getItem('coc_submissions')||'[]');const idx=all.findIndex(x=>x.id===state.id);if(idx>=0) all[idx]=payload;else all.push(payload);localStorage.setItem('coc_submissions',JSON.stringify(all));}}
-function completionGate(step,next){return`<div class="gate"><h3>第 ${step} 階段已完成</h3><p>請小組先討論與確認。後續請等待講師指示。</p><p class="hint">若講師已公布下一階段通關碼，請在下方輸入。</p><input type="text" id="code${next}" placeholder="請輸入通關碼"><div class="actions"><button class="primary" type="button" data-unlock="${next}">解鎖 Step ${next}</button></div><div id="codeMsg${next}"></div></div>`}function bindUnlocks(){document.querySelectorAll('[data-unlock]').forEach(btn=>{if(btn.dataset.bound)return;btn.dataset.bound="1";btn.addEventListener('click',()=>{const n=Number(btn.dataset.unlock),input=$("code"+n),msg=$("codeMsg"+n);if((input.value||"").trim()===codes[n]){state.unlocked=Math.max(state.unlocked,n);if(msg)msg.innerHTML='<div class="ok">通關碼正確，已解鎖。</div>';saveProgress(n);showStep(n)}else if(msg){msg.innerHTML='<div class="error">通關碼不正確，請依講師公布內容輸入。</div>'}})})}
-const subtypes={R1:["社區住宅生活圈","校園／補教周邊","住宅＋商店街","住宅＋醫院／診所周邊","住宅＋交通節點","其他住宅型情境"],COM:["辦公商圈","工業區／科技園區","商場／百貨","交通轉運點","醫院／診所工作圈","其他商辦型情境"],Sub:["在地生活圈","觀光／節慶型商圈","地方商店街／老街","鄉鎮交通不便區","學校／社區混合區","其他第三城鎮情境"]};
-document.querySelectorAll('.district').forEach(card=>card.addEventListener('click',()=>{document.querySelectorAll('.district').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');state.district={code:card.dataset.code,name:card.dataset.name};state.subtype=null;renderSubtypes()}));function renderSubtypes(){const arr=subtypes[state.district.code]||[];$("subtypeBox").className="grid-2";$("subtypeBox").innerHTML=arr.map(x=>`<div class="card selectable subtype" data-name="${x}"><strong>${x}</strong><div class="hint" style="margin:6px 0 0">${subtypeDesc(x)}</div></div>`).join("");document.querySelectorAll('.subtype').forEach(card=>card.addEventListener('click',()=>{document.querySelectorAll('.subtype').forEach(c=>c.classList.remove('selected'));card.classList.add('selected');state.subtype=card.dataset.name;saveProgress(0)}))}function subtypeDesc(x){const m={"社區住宅生活圈":"周邊住戶、家庭晚餐、假日家庭需求。","校園／補教周邊":"放學、接送、補習前後、同行分食情境。","住宅＋商店街":"居民生活圈與商店、攤商、日常採買混合。","住宅＋醫院／診所周邊":"陪診、醫護、附近居民等混合需求。","住宅＋交通節點":"居民與通勤族交疊，下班外帶或順路取餐。","辦公商圈":"午休、下午茶、下班外帶、團訂需求。","工業區／科技園區":"午休固定、輪班、加班、團體訂餐。","商場／百貨":"人流受商場活動、假日、員工與逛街客影響。","交通轉運點":"通勤、轉乘、趕時間外帶或等人空檔。","醫院／診所工作圈":"醫護、行政、陪診家屬、快速外帶並存。","在地生活圈":"靠周邊居民、熟客、地方關係與重複購買。","觀光／節慶型商圈":"旅遊、假日、連假、地方活動或節慶影響。","地方商店街／老街":"觀光客與在地客混合，平假日差異大。","鄉鎮交通不便區":"大眾運輸少，需靠市場滲透、預購與社區接觸。","學校／社區混合區":"校園、社區、家庭客與在地熟客混合。"};return m[x]||"由小組自行補充。"}function renderCurrentDistrict(){$("currentDistrict").innerHTML=`<strong>目前商圈：</strong>${state.district?.code||"未選"}｜${state.district?.name||"未選"}　／　<strong>細分情境：</strong>${state.subtype||"未選"}`}
-const customerOptions={
-"社區住宅生活圈":["家庭客","陪伴型家庭客","附近熟客","第一次嘗試居民","外帶型顧客","外送型顧客"],
-"校園／補教周邊":["放學時段購買點心或正餐的顧客","課後等待接送或補習前後的顧客","同行分食顧客","接送家庭顧客","學校教職員","附近熟客"],
-"住宅＋商店街":["附近熟客","第一次嘗試居民","逛街或採買順路外帶顧客","家庭客","外帶型顧客","周邊工作者"],
-"住宅＋醫院／診所周邊":["陪診或陪伴家屬","醫護與行政人員","附近居民","快速外帶顧客","外送型顧客","附近熟客"],
-"住宅＋交通節點":["下班順手外帶的通勤族","家庭晚餐外帶顧客","附近熟客","外帶型顧客","外送型顧客","第一次嘗試居民"],
-"辦公商圈":["午休時間有限的上班族","下班順手外帶的通勤族","團訂顧客","辦公樓工作者","外送型顧客","附近熟客"],
-"工業區／科技園區":["午休時間固定的員工","輪班或加班員工","團體訂餐顧客","下班順手外帶顧客","外送型顧客","附近熟客"],
-"商場／百貨":["逛街途中快速外帶顧客","假日家庭客","等電影或等朋友顧客","商場員工","活動或市集人流顧客","外送型顧客"],
-"交通轉運點":["趕車前快速外帶的通勤族","剛下車快速補給的旅客","下班返家順手外帶顧客","等人或轉乘空檔顧客","外送型顧客","附近工作者"],
-"醫院／診所工作圈":["醫護與行政人員","陪診或陪伴家屬","就診前後快速外帶的顧客","需要清楚、穩定、快速外帶的顧客","外送型顧客","附近熟客"],
-"在地生活圈":["在地熟客","家庭客","第一次嘗試居民","外帶型顧客","社區型顧客","外送型顧客"],
-"觀光／節慶型商圈":["觀光旅客","家庭旅遊客","需要快速補給的旅客","團體或同行分食顧客","當地熟客","節慶活動顧客"],
-"地方商店街／老街":["觀光旅客","在地熟客","逛街途中外帶顧客","家庭客","周邊工作者","第一次嘗試居民"],
-"鄉鎮交通不便區":["在地熟客","家庭客","預購或外帶顧客","社區型顧客","節慶或活動顧客","外送型顧客"],
-"學校／社區混合區":["放學時段購買點心或正餐的顧客","接送家庭顧客","附近熟客","家庭客","社區型顧客","學校教職員"]
-};function renderCustomers(){const arr=customerOptions[state.subtype]||["家庭客","陪伴型家庭客","附近熟客","第一次嘗試居民","外帶型顧客","外送型顧客","上班族／工作者","通勤族","觀光／節慶顧客","周邊合作場域顧客"];$("customerBox").innerHTML=arr.map(x=>`<label class="choice"><input type="checkbox" value="${x}">${x}</label>`).join("")}">${x}</label>`).join("")}
-$("saveStep0").addEventListener('click',()=>{if(!state.district||!state.subtype){$("save0Msg").innerHTML='<div class="error">請先選擇第一層商圈類別與第二層細分情境。</div>';return}saveProgress(0);$("save0Msg").innerHTML='<div class="ok">已儲存小組資料。</div>'});
-$("makePersona").addEventListener('click',()=>{const customers=checked('customers'),value=checked('value'),limits=checked('limits');if(!state.district||!state.subtype||customers.length===0||value.length===0||limits.length===0){$("personaResult").innerHTML='<div class="error">請完成門市限制、目標顧客與相對價值選擇。</div>';return}state.done[1]=true;state.data.step1={limits,customers,value};saveProgress(1);$("personaResult").innerHTML=`<div class="result"><h3>AI 產出：3 種目標客群情境（原型示意）</h3><table><tr><th>目標客群名稱</th><th>這群顧客是誰</th><th>何時出現／被接觸</th><th>可能選擇我們的理由</th><th>是否適合發展</th></tr><tr><td>${customers[0]}主軸</td><td>${state.district.code}｜${state.subtype}中的${customers[0]}</td><td>特定時段、社區活動或取餐情境</td><td>${value.join('、')}</td><td>適合，可作為主軸</td></tr><tr><td>熟客回訪型</td><td>已知道門店、但需要新理由再購買的顧客</td><td>平日、假日或會員通知後</td><td>熟悉安心、規則簡單</td><td>可討論</td></tr><tr><td>第一次嘗試型</td><td>附近但不常買的潛在顧客</td><td>社區試吃、市集或外部合作場域</td><td>降低嘗試門檻，導入後續外帶或預購</td><td>適合搭配外展</td></tr></table>${completionGate(1,2)}</div>`;renderStages();bindUnlocks()});
-$("makeResources").addEventListener('click',()=>{const resources=checked('resources'),note=$("resourceNote").value.trim();if(resources.length===0&&!note){$("resourcesResult").innerHTML='<div class="error">請至少選擇一項既有資源，或補充做法／優勢／盲點。</div>';return}state.done[2]=true;state.data.step2={resources,note};saveProgress(2);$("resourcesResult").innerHTML=`<div class="result"><h3>AI 整理：資源與做法</h3><table><tr><th>類別</th><th>使用者選定內容</th><th>是否對上目標客群需求</th><th>可放大或需調整之處</th></tr><tr><td>既有資源</td><td>${tags(resources)}</td><td>可協助降低嘗試門檻、強化外帶或回訪</td><td>優先挑選店長可控、成本可控、可快速試行的資源</td></tr><tr><td>補充內容</td><td>${note||'尚未補充'}</td><td>需對照第一階段目標客群</td><td>避免只是照總部活動執行，需依商圈微調</td></tr></table>${completionGate(2,3)}</div>`;renderStages();bindUnlocks()});
-$("makeConstraints").addEventListener('click',()=>{const c=checked('constraints'),d=checked('directions');if(c.length===0||d.length===0){$("constraintsResult").innerHTML='<div class="error">請至少選擇一項條件與限制，以及一項相對價值或處理方向。</div>';return}state.done[3]=true;state.data.step3={constraints:c,directions:d};saveProgress(3);$("constraintsResult").innerHTML=`<div class="result"><h3>AI 整理：條件與限制</h3><table><tr><th>條件與限制</th><th>一般容易怎麼看</th><th>可能處理方向</th><th>風險提醒</th></tr><tr><td>${tags(c)}</td><td>限制門市活動與營運彈性</td><td>${tags(d)}</td><td>不要硬把限制說成優勢；若涉及門店前場，需確認不干擾取餐、外送與尖峰營運。</td></tr></table>${completionGate(3,4)}</div>`;renderStages();bindUnlocks()});
-$("makeCandidates").addEventListener('click',()=>{state.candidates=buildCandidates();state.done[4]=true;state.data.step4={candidates:state.candidates};saveProgress(4);$("candidateResult").innerHTML=`<div class="result"><h3>AI 產出：候選行動方向</h3><table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>${state.candidates.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join('')}</table><p class="hint">請小組選出 2–3 個最想採用或發展的候選行動。</p></div>`;$("finalBox").classList.remove('hidden');renderStages()});
-function buildCandidates(){const code=state.district?.code||"";const subtype=state.subtype||"";const customers=(state.data.step1?.customers||[]).join("、");let rows=[];
- if(code==="COM"){
-  rows=[["午餐快取預約方案","回應上班族午休時間短、希望準時取餐","預購、外帶包裝、取餐動線、套餐推薦","需控管尖峰備餐與取餐分流","午餐預約單數／平均等待時間／取餐錯誤率","建議優先"],["企業團訂試吃包","降低辦公室或工業區團訂決策門檻","試吃包、團訂菜單、企業拜訪或周邊合作","需控管試吃成本、配送時間與訂單穩定性","團訂筆數／企業名單數／回購率","可討論"],["下班外帶晚餐組合","回應下班族順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"],["取餐與外送分流改善","回應尖峰取餐、外送交疊造成的混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]];
-  if(subtype.includes("商場")) rows.push(["商場員工回訪方案","回應商場員工固定但忙碌的用餐需求","員工優惠、預購、固定時段提醒","需確認商場規範與宣傳限制","員工回訪率／預購單數","可討論"]);
- } else if(code==="Sub"){
-  rows=[["地方活動／節慶快閃攤位","抓住地方活動或節慶人流，創造接觸與銷售","外部攤位、披薩切片、預購或回店優惠","需確認攤位規範、備貨、保溫與結帳流程","現場銷售額／優惠券回收／回店消費","建議優先"],["在地熟客回訪日","強化在地熟客關係，創造再次購買理由","熟客名單、會員系統、社群或群組通知","活動規則要簡單，避免增加門店負擔","熟客回訪率／會員新增／指定套餐銷售","建議優先"],["社區預購外帶導流","讓交通不便或人流分散的商圈也能形成訂購","預購表單、外帶套餐、固定取餐時段","需確保取餐時間、備餐量與通知清楚","預購訂單數／外帶占比／取消率","可討論"],["在地合作試吃活動","透過社區、學校、商家或地方組織創造第一次接觸","試吃品項、合作場域、優惠券或會員導流","需確認合作規範、食品安全與成本","試吃人次／名單數／後續訂購","可討論"]];
-  if(subtype.includes("觀光")||subtype.includes("老街")) rows.push(["觀光補給外帶組合","回應旅客快速補給、同行分食與好帶走需求","外帶包裝、多人分享餐、清楚套餐","需避免品項太複雜、影響出餐速度","觀光時段交易數／分享餐銷售","可討論"]);
- } else {
-  rows=[["社區試吃活動","降低第一次嘗試門檻，讓居民先接觸產品","試吃品項、外帶包裝、優惠券或會員導流","需控管成本、食品安全與社區規範","試吃人次／優惠券回收／會員新增","建議優先"],["社區市集擺攤","在社區聚集場景創造接觸與購買","披薩切片、攤位布置、現場銷售話術","需確認攤位、備貨、保溫與結帳流程","現場銷售額／回店消費／社群互動","可討論"],["熟客回訪活動日","創造附近熟客再次購買理由","會員系統、熟客邀請、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"],["預購外帶導流","把社區接觸轉成後續訂購","預購表單、外帶套餐、社群通知","需確保取餐時間與備餐穩定","預購訂單數／外帶占比","建議優先"],["戰鬥陀螺社區合作挑戰","創造陪伴型家庭客的互動理由","外部場地、社區合作、分享餐","優先使用社區或外部場地，不預設店內久留","活動參與組數／回店消費","可討論"]];
- }
- return rows.slice(0,6);
+const codes = {1:"看見顧客", 2:"盤點我們", 3:"看懂限制", 4:"設計行動"};
+const state = {
+  id: localStorage.getItem("coc_submission_id") || crypto.randomUUID(),
+  unlocked: 0,
+  current: 0,
+  done: {},
+  district: null,
+  subtype: null,
+  candidates: [],
+  data: {}
+};
+localStorage.setItem("coc_submission_id", state.id);
+
+const stages = [
+  ["Step 0","小組資料","可直接填寫"],
+  ["Step 1","看見顧客","等待講師公布"],
+  ["Step 2","盤點我們","等待講師公布"],
+  ["Step 3","看懂限制","等待講師公布"],
+  ["Step 4","設計行動","等待講師公布"]
+];
+
+function $(id){ return document.getElementById(id); }
+function checked(key){
+  return Array.from(document.querySelectorAll(`.choices[data-key="${key}"] input:checked`)).map(i=>i.value);
+}
+function tags(items){
+  return (items && items.length ? items : ["尚未選擇"]).map(x=>`<span class="tag">${x}</span>`).join("");
+}
+function renderStages(){
+  const box = $("stageList");
+  if(!box) return;
+  box.innerHTML = stages.map((s,i)=>{
+    const cls = i===state.current ? "current" : state.done[i] ? "done" : i>state.unlocked ? "locked" : "";
+    const icon = i===state.current ? "🔓" : state.done[i] ? "✅" : i>state.unlocked ? "🔒" : "🔓";
+    return `<div class="stage ${cls}">
+      <div class="stage-title">${icon} ${s[0]}｜${s[1]}</div>
+      <div class="stage-meta">${s[2]}</div>
+      <div class="lock">${i>state.unlocked ? "等待講師口令" : i===state.current ? "目前階段" : "已開放"}</div>
+    </div>`;
+  }).join("");
+}
+function showStep(n){
+  [0,1,2,3,4].forEach(i => $("step"+i)?.classList.add("hidden"));
+  if(n <= state.unlocked){
+    state.current = n;
+    $("step"+n)?.classList.remove("hidden");
+  }
+  renderStages();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+async function saveProgress(stage){
+  const payload = {
+    id: state.id,
+    group_name: $("groupName")?.value || "",
+    store_name: $("storeName")?.value || "",
+    district_type: state.district ? `${state.district.code}｜${state.district.name}` : "",
+    district_subtype: state.subtype || "",
+    current_stage: stage,
+    stage_status: JSON.stringify(state.done || {}),
+    data: JSON.stringify(state.data || {})
+  };
+  try{
+    const r = await fetch("/api/submissions", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || "api failed");
+  }catch(e){
+    const all = JSON.parse(localStorage.getItem("coc_submissions") || "[]");
+    const idx = all.findIndex(x => x.id === payload.id);
+    const item = {...payload, updated_at:new Date().toISOString()};
+    if(idx >= 0) all[idx] = item; else all.push(item);
+    localStorage.setItem("coc_submissions", JSON.stringify(all));
+  }
+}
+function completionGate(step,next){
+  return `<div class="gate">
+    <h3>第 ${step} 階段已完成</h3>
+    <p>請小組先討論與確認。後續請等待講師指示。</p>
+    <p class="hint">若講師已公布下一階段通關碼，請在下方輸入。</p>
+    <input type="text" id="code${next}" placeholder="請輸入通關碼">
+    <div class="actions"><button class="primary" type="button" data-unlock="${next}">解鎖 Step ${next}</button></div>
+    <div id="codeMsg${next}"></div>
+  </div>`;
+}
+function bindUnlocks(){
+  document.querySelectorAll("[data-unlock]").forEach(btn=>{
+    if(btn.dataset.bound) return;
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", async ()=>{
+      const n = Number(btn.dataset.unlock);
+      const input = $("code"+n);
+      const msg = $("codeMsg"+n);
+      if((input?.value || "").trim() === codes[n]){
+        state.unlocked = Math.max(state.unlocked, n);
+        if(msg) msg.innerHTML = '<div class="ok">通關碼正確，已解鎖。</div>';
+        await saveProgress(n);
+        showStep(n);
+      }else if(msg){
+        msg.innerHTML = '<div class="error">通關碼不正確，請依講師公布內容輸入。</div>';
+      }
+    });
+  });
+}
+
+const subtypes = {
+  R1:["社區住宅生活圈","校園／補教周邊","住宅＋商店街","住宅＋醫院／診所周邊","住宅＋交通節點","其他住宅型情境"],
+  COM:["辦公商圈","工業區／科技園區","商場／百貨","交通轉運點","醫院／診所工作圈","其他商辦型情境"],
+  Sub:["在地生活圈","觀光／節慶型商圈","地方商店街／老街","鄉鎮交通不便區","學校／社區混合區","其他第三城鎮情境"]
+};
+function subtypeDesc(x){
+  const m = {
+    "社區住宅生活圈":"周邊住戶、家庭晚餐、假日家庭需求。",
+    "校園／補教周邊":"放學、接送、補習前後、同行分食情境。",
+    "住宅＋商店街":"居民生活圈與商店、攤商、日常採買混合。",
+    "住宅＋醫院／診所周邊":"陪診、醫護、附近居民等混合需求。",
+    "住宅＋交通節點":"居民與通勤族交疊，下班外帶或順路取餐。",
+    "辦公商圈":"午休、下午茶、下班外帶、團訂需求。",
+    "工業區／科技園區":"午休固定、輪班、加班、團體訂餐。",
+    "商場／百貨":"人流受商場活動、假日、員工與逛街客影響。",
+    "交通轉運點":"通勤、轉乘、趕時間外帶或等人空檔。",
+    "醫院／診所工作圈":"醫護、行政、陪診家屬、快速外帶並存。",
+    "在地生活圈":"靠周邊居民、熟客、地方關係與重複購買。",
+    "觀光／節慶型商圈":"旅遊、假日、連假、地方活動或節慶影響。",
+    "地方商店街／老街":"觀光客與在地客混合，平假日差異大。",
+    "鄉鎮交通不便區":"大眾運輸少，需靠市場滲透、預購與社區接觸。",
+    "學校／社區混合區":"校園、社區、家庭客與在地熟客混合。"
+  };
+  return m[x] || "由小組自行補充。";
+}
+function renderSubtypes(){
+  const arr = subtypes[state.district?.code] || [];
+  const box = $("subtypeBox");
+  box.className = "grid-2";
+  box.innerHTML = arr.map(x=>`<div class="card selectable subtype" data-name="${x}">
+    <strong>${x}</strong><div class="hint" style="margin:6px 0 0">${subtypeDesc(x)}</div>
+  </div>`).join("");
+  document.querySelectorAll(".subtype").forEach(card=>{
+    card.addEventListener("click", async ()=>{
+      document.querySelectorAll(".subtype").forEach(c=>c.classList.remove("selected"));
+      card.classList.add("selected");
+      state.subtype = card.dataset.name;
+      renderCurrentDistrict();
+      renderCustomers();
+      await saveProgress(0);
+    });
+  });
+}
+function renderCurrentDistrict(){
+  const el = $("currentDistrict");
+  if(el) el.innerHTML = `<strong>目前商圈：</strong>${state.district?.code || "未選"}｜${state.district?.name || "未選"}　／　<strong>細分情境：</strong>${state.subtype || "未選"}`;
+}
+const customerOptions = {
+  "社區住宅生活圈":["家庭客","陪伴型家庭客","附近熟客","第一次嘗試居民","外帶型顧客","外送型顧客"],
+  "校園／補教周邊":["放學時段購買點心或正餐的顧客","課後等待接送或補習前後的顧客","同行分食顧客","接送家庭顧客","學校教職員","附近熟客"],
+  "住宅＋商店街":["附近熟客","第一次嘗試居民","逛街或採買順路外帶顧客","家庭客","外帶型顧客","周邊工作者"],
+  "住宅＋醫院／診所周邊":["陪診或陪伴家屬","醫護與行政人員","附近居民","快速外帶顧客","外送型顧客","附近熟客"],
+  "住宅＋交通節點":["下班順手外帶的通勤族","家庭晚餐外帶顧客","附近熟客","外帶型顧客","外送型顧客","第一次嘗試居民"],
+  "辦公商圈":["午休時間有限的上班族","下班順手外帶的通勤族","團訂顧客","辦公樓工作者","外送型顧客","附近熟客"],
+  "工業區／科技園區":["午休時間固定的員工","輪班或加班員工","團體訂餐顧客","下班順手外帶顧客","外送型顧客","附近熟客"],
+  "商場／百貨":["逛街途中快速外帶顧客","假日家庭客","等電影或等朋友顧客","商場員工","活動或市集人流顧客","外送型顧客"],
+  "交通轉運點":["趕車前快速外帶的通勤族","剛下車快速補給的旅客","下班返家順手外帶顧客","等人或轉乘空檔顧客","外送型顧客","附近工作者"],
+  "醫院／診所工作圈":["醫護與行政人員","陪診或陪伴家屬","就診前後快速外帶的顧客","需要清楚、穩定、快速外帶的顧客","外送型顧客","附近熟客"],
+  "在地生活圈":["在地熟客","家庭客","第一次嘗試居民","外帶型顧客","社區型顧客","外送型顧客"],
+  "觀光／節慶型商圈":["觀光旅客","家庭旅遊客","需要快速補給的旅客","團體或同行分食顧客","當地熟客","節慶活動顧客"],
+  "地方商店街／老街":["觀光旅客","在地熟客","逛街途中外帶顧客","家庭客","周邊工作者","第一次嘗試居民"],
+  "鄉鎮交通不便區":["在地熟客","家庭客","預購或外帶顧客","社區型顧客","節慶或活動顧客","外送型顧客"],
+  "學校／社區混合區":["放學時段購買點心或正餐的顧客","接送家庭顧客","附近熟客","家庭客","社區型顧客","學校教職員"]
+};
+function renderCustomers(){
+  const arr = customerOptions[state.subtype] || ["家庭客","陪伴型家庭客","附近熟客","第一次嘗試居民","外帶型顧客","外送型顧客","上班族／工作者","通勤族","觀光／節慶顧客","周邊合作場域顧客"];
+  $("customerBox").innerHTML = arr.map(x=>`<label class="choice"><input type="checkbox" value="${x}">${x}</label>`).join("");
+}
+
+function buildCandidates(){
+  const code = state.district?.code || "";
+  const subtype = state.subtype || "";
+  let rows = [];
+  if(code === "COM"){
+    rows = [
+      ["午餐快取預約方案","回應上班族午休時間短、希望準時取餐","預購、外帶包裝、取餐動線、套餐推薦","需控管尖峰備餐與取餐分流","午餐預約單數／平均等待時間／取餐錯誤率","建議優先"],
+      ["企業團訂試吃包","降低辦公室或工業區團訂決策門檻","試吃包、團訂菜單、企業拜訪或周邊合作","需控管試吃成本、配送時間與訂單穩定性","團訂筆數／企業名單數／回購率","可討論"],
+      ["下班外帶晚餐組合","回應下班族順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"],
+      ["取餐與外送分流改善","回應尖峰取餐、外送交疊造成的混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]
+    ];
+    if(subtype.includes("商場")) rows.push(["商場員工回訪方案","回應商場員工固定但忙碌的用餐需求","員工優惠、預購、固定時段提醒","需確認商場規範與宣傳限制","員工回訪率／預購單數","可討論"]);
+  }else if(code === "Sub"){
+    rows = [
+      ["地方活動／節慶快閃攤位","抓住地方活動或節慶人流，創造接觸與銷售","外部攤位、披薩切片、預購或回店優惠","需確認攤位規範、備貨、保溫與結帳流程","現場銷售額／優惠券回收／回店消費","建議優先"],
+      ["在地熟客回訪日","強化在地熟客關係，創造再次購買理由","熟客名單、會員系統、社群或群組通知","活動規則要簡單，避免增加門店負擔","熟客回訪率／會員新增／指定套餐銷售","建議優先"],
+      ["社區預購外帶導流","讓交通不便或人流分散的商圈也能形成訂購","預購表單、外帶套餐、固定取餐時段","需確保取餐時間、備餐量與通知清楚","預購訂單數／外帶占比／取消率","可討論"],
+      ["在地合作試吃活動","透過社區、學校、商家或地方組織創造第一次接觸","試吃品項、合作場域、優惠券或會員導流","需確認合作規範、食品安全與成本","試吃人次／名單數／後續訂購","可討論"]
+    ];
+    if(subtype.includes("觀光") || subtype.includes("老街")) rows.push(["觀光補給外帶組合","回應旅客快速補給、同行分食與好帶走需求","外帶包裝、多人分享餐、清楚套餐","需避免品項太複雜、影響出餐速度","觀光時段交易數／分享餐銷售","可討論"]);
+  }else{
+    rows = [
+      ["社區試吃活動","降低第一次嘗試門檻，讓居民先接觸產品","試吃品項、外帶包裝、優惠券或會員導流","需控管成本、食品安全與社區規範","試吃人次／優惠券回收／會員新增","建議優先"],
+      ["社區市集擺攤","在社區聚集場景創造接觸與購買","披薩切片、攤位布置、現場銷售話術","需確認攤位、備貨、保溫與結帳流程","現場銷售額／回店消費／社群互動","可討論"],
+      ["熟客回訪活動日","創造附近熟客再次購買理由","會員系統、熟客邀請、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"],
+      ["預購外帶導流","把社區接觸轉成後續訂購","預購表單、外帶套餐、社群通知","需確保取餐時間與備餐穩定","預購訂單數／外帶占比","建議優先"],
+      ["戰鬥陀螺社區合作挑戰","創造陪伴型家庭客的互動理由","外部場地、社區合作、分享餐","優先使用社區或外部場地，不預設店內久留","活動參與組數／回店消費","可討論"]
+    ];
+  }
+  return rows.slice(0,6);
 }
 function parseActionNumbers(raw){
- const cn={"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9,"十":10};
- let s=String(raw||"").trim();
- Object.keys(cn).forEach(k=>{s=s.replaceAll(k,String(cn[k]));});
- s=s.replace(/[，、;；／\\/|]+/g," ");
- return s.split(/\s+/).map(x=>parseInt(x,10)).filter(n=>Number.isInteger(n)&&n>0);
+  const cn = {"一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9,"十":10};
+  let s = String(raw || "").trim();
+  Object.keys(cn).forEach(k => { s = s.replaceAll(k, String(cn[k])); });
+  s = s.replace(/[，、;；／\\/|]+/g, " ");
+  return s.split(/\s+/).map(x=>parseInt(x,10)).filter(n=>Number.isInteger(n) && n>0);
 }
-$("makeFinal").addEventListener('click',()=>{const nums=parseActionNumbers($("selectedActions").value||'');const rows=nums.map(n=>state.candidates[n-1]).filter(Boolean);if(rows.length===0){$("finalResult").innerHTML='<div class="error">請輸入要採用的候選行動編號，例如：1,5 或 1、5。可用半形逗號、頓號或空格分隔，也可輸入中文數字如：一、五。</div>';return}state.data.final=rows;saveProgress(4);$("finalResult").innerHTML=`<div class="result"><h3>Action Design｜下一步行動</h3><table><tr><th>行動方向</th><th>具體做法</th><th>回應需求與痛點</th><th>運用資源與做法</th><th>條件與限制</th><th>觀察指標</th></tr>${rows.map(r=>`<tr><td>${r[0]}</td><td>先小規模試行，確認人力、動線、規則與成本可控後再放大。</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}</table><div class="gate"><h3>第四階段已完成</h3><p>請小組人工檢查這些行動是否符合品牌規範、門市人力、取餐與外送動線，以及實際可行性。後續請等待講師指示。</p></div></div>`});
-bindUnlocks();renderStages();
+
+document.querySelectorAll(".district").forEach(card=>{
+  card.addEventListener("click", ()=>{
+    document.querySelectorAll(".district").forEach(c=>c.classList.remove("selected"));
+    card.classList.add("selected");
+    state.district = {code:card.dataset.code, name:card.dataset.name};
+    state.subtype = null;
+    renderSubtypes();
+    renderCurrentDistrict();
+  });
+});
+
+$("saveStep0")?.addEventListener("click", async ()=>{
+  if(!state.district || !state.subtype){
+    $("save0Msg").innerHTML = '<div class="error">請先選擇第一層商圈類別與第二層細分情境。</div>';
+    return;
+  }
+  await saveProgress(0);
+  $("save0Msg").innerHTML = '<div class="ok">已儲存小組資料。</div>';
+});
+$("makePersona")?.addEventListener("click", async ()=>{
+  const customers = checked("customers"), value = checked("value"), limits = checked("limits");
+  if(!state.district || !state.subtype || customers.length===0 || value.length===0 || limits.length===0){
+    $("personaResult").innerHTML = '<div class="error">請完成門市限制、目標顧客與相對價值選擇。</div>';
+    return;
+  }
+  state.done[1] = true;
+  state.data.step1 = {limits, customers, value};
+  await saveProgress(1);
+  $("personaResult").innerHTML = `<div class="result"><h3>AI 產出：3 種目標客群情境（原型示意）</h3>
+    <table><tr><th>目標客群名稱</th><th>這群顧客是誰</th><th>何時出現／被接觸</th><th>可能選擇我們的理由</th><th>是否適合發展</th></tr>
+    <tr><td>${customers[0]}主軸</td><td>${state.district.code}｜${state.subtype}中的${customers[0]}</td><td>特定時段、社區活動或取餐情境</td><td>${value.join("、")}</td><td>適合，可作為主軸</td></tr>
+    <tr><td>熟客回訪型</td><td>已知道門店、但需要新理由再購買的顧客</td><td>平日、假日或會員通知後</td><td>熟悉安心、規則簡單</td><td>可討論</td></tr>
+    <tr><td>第一次嘗試型</td><td>附近但不常買的潛在顧客</td><td>社區試吃、市集或外部合作場域</td><td>降低嘗試門檻，導入後續外帶或預購</td><td>適合搭配外展</td></tr>
+    </table>${completionGate(1,2)}</div>`;
+  renderStages();
+  bindUnlocks();
+});
+$("makeResources")?.addEventListener("click", async ()=>{
+  const resources = checked("resources"), note = $("resourceNote").value.trim();
+  if(resources.length===0 && !note){
+    $("resourcesResult").innerHTML = '<div class="error">請至少選擇一項既有資源，或補充做法／優勢／盲點。</div>';
+    return;
+  }
+  state.done[2] = true;
+  state.data.step2 = {resources, note};
+  await saveProgress(2);
+  $("resourcesResult").innerHTML = `<div class="result"><h3>AI 整理：資源與做法</h3>
+    <table><tr><th>類別</th><th>使用者選定內容</th><th>是否對上目標客群需求</th><th>可放大或需調整之處</th></tr>
+    <tr><td>既有資源</td><td>${tags(resources)}</td><td>可協助降低嘗試門檻、強化外帶或回訪</td><td>優先挑選店長可控、成本可控、可快速試行的資源</td></tr>
+    <tr><td>補充內容</td><td>${note || "尚未補充"}</td><td>需對照第一階段目標客群</td><td>避免只是照總部活動執行，需依商圈微調</td></tr>
+    </table>${completionGate(2,3)}</div>`;
+  renderStages();
+  bindUnlocks();
+});
+$("makeConstraints")?.addEventListener("click", async ()=>{
+  const c = checked("constraints"), d = checked("directions");
+  if(c.length===0 || d.length===0){
+    $("constraintsResult").innerHTML = '<div class="error">請至少選擇一項條件與限制，以及一項相對價值或處理方向。</div>';
+    return;
+  }
+  state.done[3] = true;
+  state.data.step3 = {constraints:c, directions:d};
+  await saveProgress(3);
+  $("constraintsResult").innerHTML = `<div class="result"><h3>AI 整理：條件與限制</h3>
+    <table><tr><th>條件與限制</th><th>一般容易怎麼看</th><th>可能處理方向</th><th>風險提醒</th></tr>
+    <tr><td>${tags(c)}</td><td>限制門市活動與營運彈性</td><td>${tags(d)}</td><td>不要硬把限制說成優勢；若涉及門店前場，需確認不干擾取餐、外送與尖峰營運。</td></tr>
+    </table>${completionGate(3,4)}</div>`;
+  renderStages();
+  bindUnlocks();
+});
+$("makeCandidates")?.addEventListener("click", async ()=>{
+  state.candidates = buildCandidates();
+  state.done[4] = true;
+  state.data.step4 = {candidates:state.candidates};
+  await saveProgress(4);
+  $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
+    <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>
+    ${state.candidates.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`).join("")}
+    </table><p class="hint">請小組選出 2–3 個最想採用或發展的候選行動。</p></div>`;
+  $("finalBox").classList.remove("hidden");
+  renderStages();
+});
+$("makeFinal")?.addEventListener("click", async ()=>{
+  const nums = parseActionNumbers($("selectedActions").value || "");
+  const rows = nums.map(n=>state.candidates[n-1]).filter(Boolean);
+  if(rows.length===0){
+    $("finalResult").innerHTML = '<div class="error">請輸入要採用的候選行動編號，例如：1,5 或 1、5。可用半形逗號、頓號或空格分隔，也可輸入中文數字如：一、五。</div>';
+    return;
+  }
+  state.data.final = rows;
+  await saveProgress(4);
+  $("finalResult").innerHTML = `<div class="result"><h3>Action Design｜下一步行動</h3>
+    <table><tr><th>行動方向</th><th>具體做法</th><th>回應需求與痛點</th><th>運用資源與做法</th><th>條件與限制</th><th>觀察指標</th></tr>
+    ${rows.map(r=>`<tr><td>${r[0]}</td><td>先小規模試行，確認人力、動線、規則與成本可控後再放大。</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")}
+    </table><div class="gate"><h3>第四階段已完成</h3><p>請小組人工檢查這些行動是否符合品牌規範、門市人力、取餐與外送動線，以及實際可行性。後續請等待講師指示。</p></div></div>`;
+});
+
+bindUnlocks();
+renderStages();
 </script>
+
 </body>
 </html>
