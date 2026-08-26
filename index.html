@@ -76,6 +76,20 @@
 }
 
 .score-cell label{display:inline-block;margin:2px 8px 2px 0}.score-guide{font-size:12px;color:#475467;line-height:1.65;margin-top:6px}.total-cell{font-weight:800}.winner-cell{font-weight:800;color:#ed1c24}
+
+.choice .choice-title{font-weight:800;display:block;margin-bottom:4px}
+.choice .choice-desc{font-size:13px;color:#475467;line-height:1.55;display:block}
+.eval-table{table-layout:fixed;width:100%}
+.eval-table th,.eval-table td{vertical-align:top;word-break:break-word}
+.eval-table .candidate-col{width:12%}
+.eval-table .criterion-col{width:15%}
+.eval-table .total-col{width:5%}
+.eval-table .winner-col{width:8%}
+.score-cell label{display:inline-block;margin:2px 8px 2px 0;white-space:nowrap}
+.score-guide{font-size:12px;color:#475467;line-height:1.65;margin-top:6px}
+.total-cell{font-weight:800;text-align:center}
+.winner-cell{font-weight:800;color:#ed1c24;text-align:center}
+
 </style>
 
 <style id="v16-extra">
@@ -192,15 +206,15 @@
       </div>
 
       <h3>Q4｜這類顧客為什麼可能選擇我們？</h3>
-      <div class="definition">這裡不是硬把限制說成優勢，而是從顧客需求出發，判斷我們能不能成為被選擇的理由。</div>
+      <div class="definition">請從顧客角度判斷：這類顧客在什麼情況下會覺得「選我們比較方便、安心或值得」。</div>
       <div class="grid-2 choices" data-key="value">
         <label class="choice"><input type="checkbox" value="快速取得，不拖時間">快速取得，不拖時間</label>
         <label class="choice"><input type="checkbox" value="好帶走，適合外帶">好帶走，適合外帶</label>
         <label class="choice"><input type="checkbox" value="多人分享，容易解決一餐">多人分享，容易解決一餐</label>
         <label class="choice"><input type="checkbox" value="熟悉安心，適合固定回訪">熟悉安心，適合固定回訪</label>
         <label class="choice"><input type="checkbox" value="規則簡單，容易做決定">規則簡單，容易做決定</label>
-        <label class="choice"><input type="checkbox" value="可以不期待顧客一定現場消費，而聚焦在預購、外帶或外送延伸消費">可以不期待顧客一定現場消費，而聚焦在預購、外帶或外送延伸消費</label>
-        <label class="choice"><input type="checkbox" value="可以搭配社區、商場、學校或地方活動接觸">可以搭配社區、商場、學校或地方活動接觸</label>
+        <label class="choice"><input type="checkbox" value="可以預購、外帶或外送，不一定要現場等待">可以預購、外帶或外送，不一定要現場等待</label>
+        <label class="choice"><input type="checkbox" value="在原本活動場域就能接觸或購買，不必特地繞路">在原本活動場域就能接觸或購買，不必特地繞路</label>
         <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="valueOther">其他</label>
         <input class="other-input hidden" id="valueOther" type="text" placeholder="請補充其他可能被選擇的理由">
       </div>
@@ -591,11 +605,68 @@ const customerOptions = {
   "鄉鎮交通不便區":["在地熟客","家庭客","預購或外帶顧客","在地社群顧客","節慶或活動顧客","還不常買的在地顧客"],
   "學校／社區混合區":["校園周邊放學時段顧客","接送家庭顧客","附近熟客","家庭客","在地社群顧客","學校教職員"]
 };
-const customerDefinitions = {
-  R1:"請單選本次活動最想優先服務的一類顧客。家庭客＝多人分享、方便解決一餐；陪伴型家庭客＝大人陪同參與活動或等待過程中產生消費；附近熟客＝已知道門店、有機會重複購買；附近第一次嘗試居民＝住宅生活圈中需要降低嘗試門檻的顧客。",
-  COM:"請單選本次活動最想優先服務的一類顧客。上班族／工作者＝時間有限、重視速度與穩定；團訂顧客＝需要降低辦公室或園區決策門檻；通勤族＝上下班或轉乘時順手外帶；商場員工＝固定在商場工作、但用餐時間有限；外送型顧客＝透過平台或外送情境完成購買。",
-  Sub:"請單選本次活動最想優先服務的一類顧客。在地熟客＝已知道門店、有機會重複購買；還不常買的在地顧客＝第三城鎮中尚未形成購買習慣、需要提高市場滲透的顧客；在地社群顧客＝透過社區、學校、地方活動或地方組織接觸；節慶或活動顧客＝受地方活動、連假與節慶帶動的顧客；觀光旅客＝需要快速補給、同行分食或方便外帶。"
+
+const customerOptionDefinitions = {
+  "家庭客":"多人分享，方便解決一餐。",
+  "陪伴型家庭客":"大人陪同參與活動或等待過程中產生消費。",
+  "附近熟客":"已知道門店，有機會重複購買。",
+  "附近第一次嘗試居民":"住宅生活圈中需要降低嘗試門檻的顧客。",
+  "外帶型顧客":"重視快速取餐、方便帶走。",
+  "外送型顧客":"不一定到店，透過外送平台或電話完成購買。",
+  "校園周邊放學時段顧客":"放學、補習前後或接送等待時出現的顧客。",
+  "課後等待接送或補習前後的顧客":"在課後等待接送、補習前後或空檔時可能購買。",
+  "同行分食顧客":"與同學、朋友或同行者一起分享餐點。",
+  "接送家庭顧客":"接送孩子或等待過程中可能順手購買。",
+  "學校教職員":"在學校或補教周邊工作，有午餐、下午茶或外帶需求。",
+  "逛街或採買順路外帶顧客":"在商店街或採買途中順路帶走餐點。",
+  "商店街周邊工作者":"固定在周邊商店或攤商工作，有快速用餐需求。",
+  "陪診或陪伴家屬":"在醫院或診所陪同就診、等待或照顧，需要快速、方便、少等待。",
+  "醫護與行政人員":"在醫院或診所工作，用餐時間受班表與現場狀況影響。",
+  "附近居民":"住在門店周邊，可能因方便、熟悉或外帶需求而購買。",
+  "快速外帶顧客":"時間有限，希望快速取得餐點並離開。",
+  "就診前後快速外帶顧客":"就診前後時間不穩定，需要快速、方便、少等待。",
+  "需要清楚穩定快速外帶的顧客":"重視取餐流程清楚、餐點穩定、等待時間可控。",
+  "下班順手外帶的通勤族":"下班或轉乘途中順路帶餐回家。",
+  "家庭晚餐外帶顧客":"下班後或晚餐時段，想快速解決家庭用餐。",
+  "午休時間有限的上班族":"午餐時間短，重視快速、準時、少等待。",
+  "團訂顧客":"辦公室、工廠或單位一起訂餐，需要降低決策與協調成本。",
+  "辦公樓工作者":"固定在周邊工作，有午餐、下午茶或加班餐需求。",
+  "上班族／工作者":"時間有限，重視速度、穩定與方便。",
+  "通勤族":"上下班或轉乘時順手外帶，重視快速與便利。",
+  "午休時間固定的員工":"用餐時間集中且有限，重視準時與穩定供餐。",
+  "輪班或加班員工":"用餐時間不固定，可能需要預購、外帶或外送支援。",
+  "團體訂餐顧客":"多人一起訂餐，需要清楚品項、價格與取餐安排。",
+  "下班順手外帶顧客":"下班途中想順手帶餐，重視方便與快速。",
+  "園區周邊熟客":"固定在工業區或科技園區周邊出現，有機會重複購買。",
+  "逛街途中快速外帶顧客":"逛街或移動途中需要快速、好帶走的餐點。",
+  "假日家庭客":"假日與家人同行，重視分享、方便與活動搭配。",
+  "等電影或等朋友顧客":"在等待空檔中可能購買，重視方便、快速、不麻煩。",
+  "商場員工":"固定在商場工作，但用餐時間有限。",
+  "活動或市集人流顧客":"受商場活動、市集或人流帶動，可能臨時購買。",
+  "趕車前快速外帶的通勤族":"趕車或轉乘前需要快速取得、方便帶走。",
+  "剛下車快速補給的旅客":"剛抵達或轉乘時需要快速補給，重視便利與好帶走。",
+  "下班返家順手外帶顧客":"返家途中順路購買，重視快速與不繞路。",
+  "等人或轉乘空檔顧客":"等待或轉乘空檔中可能購買，重視快速與簡單決策。",
+  "附近工作者":"固定在周邊工作，有午餐、外帶或加班餐需求。",
+  "在地熟客":"已知道門店，有機會重複購買。",
+  "還不常買的在地顧客":"尚未形成購買習慣，需要提高嘗試與市場滲透。",
+  "在地社群顧客":"可透過社區、學校、地方組織或熟人關係接觸。",
+  "預購或外送型顧客":"偏好先預訂或透過外送完成購買。",
+  "觀光旅客":"旅途中需要快速補給、同行分食或方便外帶。",
+  "家庭旅遊客":"與家人同行旅遊，重視多人分享、方便與好帶走。",
+  "需要快速補給的旅客":"旅途中時間有限，需要快速、方便、能帶走的餐點。",
+  "團體或同行分食顧客":"與同行者一起分食，重視份量、分享與決策簡單。",
+  "當地熟客":"在地固定顧客，已知道門店，有機會重複購買。",
+  "節慶活動顧客":"受到地方活動、連假、節慶或人流變化帶動。",
+  "逛街途中外帶顧客":"逛街或移動途中順手外帶，重視方便與快速。",
+  "周邊工作者":"固定在周邊工作，有午餐、下午茶或外帶需求。",
+  "預購或外帶顧客":"希望先預訂或快速外帶，降低等待與不確定性。",
+  "節慶或活動顧客":"受到地方活動、連假、節慶或人流變化帶動。"
 };
+function customerOptionDefinition(x){
+  return customerOptionDefinitions[x] || "請依本次商圈情境自行判斷這類顧客的主要需求。";
+}
+
 function renderCustomers(){
   let arr = customerOptions[state.subtype];
   if(!arr){
@@ -607,13 +678,13 @@ function renderCustomers(){
       arr = ["家庭客","陪伴型家庭客","附近熟客","附近第一次嘗試居民","外帶型顧客","外送型顧客"];
     }
   }
-  $("customerDefinition").innerHTML = `<strong>單選一類主要顧客。</strong>${safe(customerDefinitions[state.district?.code] || "請選擇本次活動最想優先服務的一類顧客。")}`;
+  $("customerDefinition").innerHTML = "請單選本次活動最想優先服務的一類顧客。請聚焦一類主要顧客，不要一次服務所有顧客。";
   arr = [...arr, "其他"];
   $("customerBox").innerHTML = arr.map(x=>{
     if(x === "其他"){
-      return `<label class="choice other-choice"><input type="radio" name="customerChoice" value="其他" data-other-target="customersOther">其他</label><input class="other-input hidden" id="customersOther" type="text" placeholder="請補充其他顧客類型">`;
+      return `<label class="choice other-choice"><input type="radio" name="customerChoice" value="其他" data-other-target="customersOther"><span class="choice-title">其他</span><span class="choice-desc">若以上類型都不符合，請自行補充一類主要顧客。</span></label><input class="other-input hidden" id="customersOther" type="text" placeholder="請補充其他顧客類型">`;
     }
-    return `<label class="choice"><input type="radio" name="customerChoice" value="${safe(x)}">${safe(x)}</label>`;
+    return `<label class="choice"><input type="radio" name="customerChoice" value="${safe(x)}"><span class="choice-title">${safe(x)}</span><span class="choice-desc">${safe(customerOptionDefinition(x))}</span></label>`;
   }).join("");
   bindCustomerRadio();
 }
@@ -735,7 +806,7 @@ function renderCandidateRows(){
   const selected = state.selectedCandidateIndices;
   const tableRows = state.candidates.map((r,i)=>{
     const sel = selected.includes(i) ? " selected" : "";
-    return `<tr><td><button type="button" class="candidate-select-btn${sel}" onclick="toggleCandidate(${i})">${i+1}</button></td><td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td><td>${safe(r[5])}</td></tr>`;
+    return `<tr><td><button type="button" class="candidate-select-btn${sel}" onclick="toggleCandidate(${i})">${i+1}</button></td><td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td></tr>`;
   }).join("");
   $("candidateTableBody").innerHTML = tableRows;
   const names = selected.map(i=>`${i+1}. ${state.candidates[i]?.[0] || ""}`).filter(Boolean).join("、") || "尚未選擇";
@@ -792,20 +863,19 @@ function renderCocSheet(finalPlan){
     </table>
   </div>`;
 }
-async function scoreInput(rowIndex, key){
-  const selectors = [
-    `input.score-radio[data-row="${rowIndex}"][data-key="${key}"]:checked`,
-    `input[data-row="${rowIndex}"][data-key="${key}"]:checked`,
-    `input[name="score_${rowIndex}_${key}"]:checked`
-  ];
-
-  for(const selector of selectors){
-    const el = document.querySelector(selector);
-    if(el){
+async function readCheckedScore(rowIndex, key){
+  const group = document.getElementsByName(`score_${rowIndex}_${key}`);
+  for(const el of group){
+    if(el.checked){
       const n = Number.parseInt(String(el.value), 10);
-      if(Number.isFinite(n)) return n;
+      return Number.isFinite(n) ? n : null;
     }
   }
+  return null;
+}
+function scoreInput(rowIndex, key){
+  const direct = readCheckedScore(rowIndex, key);
+  if(Number.isFinite(direct)) return direct;
 
   const v = state.evalScores?.[rowIndex]?.[key];
   const n = Number.parseInt(String(v), 10);
@@ -819,41 +889,22 @@ function setScore(rowIndex, key, value){
   updateEvaluationResult();
 }
 function bindScoreInputs(){
-  // Bind only once at document level. This catches all dynamically generated radio inputs.
   if(window.__cocScoreBound === true) return;
   window.__cocScoreBound = true;
   document.addEventListener("change", (event)=>{
     const input = event.target;
     if(!input || input.tagName !== "INPUT") return;
-    const isScoreInput = input.classList.contains("score-radio") || String(input.name || "").startsWith("score_");
-    if(!isScoreInput) return;
-
-    const row = Number.parseInt(input.dataset.row ?? String(input.name || "").split("_")[1], 10);
-    const key = input.dataset.key ?? String(input.name || "").split("_")[2];
-
+    if(!String(input.name || "").startsWith("score_")) return;
+    const parts = String(input.name).split("_");
+    const row = Number.parseInt(parts[1], 10);
+    const key = parts[2];
     if(Number.isFinite(row) && key){
-      if(!state.evalScores) state.evalScores = {};
-      if(!state.evalScores[row]) state.evalScores[row] = {};
-      const n = Number.parseInt(String(input.value), 10);
-      state.evalScores[row][key] = Number.isFinite(n) ? n : null;
-    }
-
-    updateEvaluationResult();
-  });
-}
-
-function bindScoreInputs(){
-  document.querySelectorAll("input.score-radio").forEach(input=>{
-    if(input.dataset.scoreBound === "1") return;
-    input.dataset.scoreBound = "1";
-    input.addEventListener("change", ()=>{
-      const row = Number.parseInt(input.dataset.row, 10);
-      const key = input.dataset.key;
       setScore(row, key, input.value);
-    });
+    }else{
+      updateEvaluationResult();
+    }
   });
 }
-
 function getEvaluationScores(){
   const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
   return selected.map((plan, idx)=>{
@@ -917,7 +968,12 @@ function renderEvaluation(){
   $("evaluationBox").innerHTML = `<div class="result">
     <h3>方案評估表</h3>
     ${criteriaGuide}
-    <table>
+    <table class="eval-table">
+      <colgroup>
+        <col class="candidate-col">
+        <col class="criterion-col"><col class="criterion-col"><col class="criterion-col"><col class="criterion-col"><col class="criterion-col">
+        <col class="total-col"><col class="winner-col">
+      </colgroup>
       <tr><th>候選方案</th>${evaluationCriteria.map(c=>`<th>${c.label}</th>`).join("")}<th>總分</th><th>方案選定</th></tr>
       ${rows}
     </table>
@@ -1104,7 +1160,7 @@ function makeCandidates(){
   state.data.step4 = {candidates:state.candidates};
   resetEvaluationState();
   $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
-    <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>
+    <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th></tr>
     <tbody id="candidateTableBody"></tbody>
     </table><p class="hint">請選出至少 2 個想採用或發展的候選行動，進入方案評估。所有被選定的候選行動，都會進入下一步評估。</p>
     <div id="selectedSummary" class="selected-summary">尚未選擇</div>
@@ -1119,6 +1175,7 @@ function makeCandidates(){
   renderStages();
 }
 
+bindScoreInputs();
 bindScoreInputs();
 bindUnlocks();
 renderStages();
