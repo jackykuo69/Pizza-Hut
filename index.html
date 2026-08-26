@@ -323,6 +323,11 @@ function $(id){ return document.getElementById(id); }
 function safe(v){
   return String(v ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
 }
+function resetEvaluationState(){
+  state.evalScores = {};
+  state.data.evaluation = null;
+  state.data.selectedPlan = null;
+}
 function subtypeFinal(){
   const base = state.subtype || "";
   const input = $("subtypeOtherInput");
@@ -715,10 +720,12 @@ function toggleCandidate(i){
     state.selectedCandidateIndices.push(i);
   }
   state.selectedCandidateIndices.sort((a,b)=>a-b);
-  state.data.selectedPlan = null;
+  resetEvaluationState();
   renderCandidateRows();
   $("evaluationBox")?.classList.add("hidden");
+  $("evaluationBox").innerHTML = "";
   $("finalBox")?.classList.add("hidden");
+  $("finalBox").innerHTML = "";
   if($("candidateConfirmMsg")){
     $("candidateConfirmMsg").innerHTML = '<div class="hint">候選行動選擇已更新，請按下「確認候選行動，進入方案評估」。</div>';
   }
@@ -744,6 +751,7 @@ function confirmCandidates(){
     $("finalBox")?.classList.add("hidden");
     return;
   }
+  resetEvaluationState();
   if(msg) msg.innerHTML = `<div class="ok">已確認 ${selectedCount} 個候選行動，請往下完成方案評估。</div>`;
   renderEvaluation();
   $("evaluationBox")?.scrollIntoView({behavior:"smooth", block:"start"});
@@ -784,10 +792,16 @@ function renderCocSheet(finalPlan){
   </div>`;
 }
 async function scoreInput(rowIndex, key){
-  const el = document.querySelector(`input[name="score_${rowIndex}_${key}"]:checked`);
-  if(!el) return null;
-  const n = Number.parseInt(String(el.value), 10);
+  const v = state.evalScores?.[rowIndex]?.[key];
+  const n = Number.parseInt(String(v), 10);
   return Number.isFinite(n) ? n : null;
+}
+function setScore(rowIndex, key, value){
+  if(!state.evalScores) state.evalScores = {};
+  if(!state.evalScores[rowIndex]) state.evalScores[rowIndex] = {};
+  const n = Number.parseInt(String(value), 10);
+  state.evalScores[rowIndex][key] = Number.isFinite(n) ? n : null;
+  updateEvaluationResult();
 }
 function getEvaluationScores(){
   const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
@@ -798,7 +812,7 @@ function getEvaluationScores(){
       scores[c.key] = Number.isFinite(n) ? n : null;
     });
     const complete = evaluationCriteria.every(c=>Number.isFinite(scores[c.key]));
-    const total = evaluationCriteria.reduce((sum,c)=>sum + (Number.isFinite(scores[c.key]) ? scores[c.key] : 0), 0);
+    const total = complete ? evaluationCriteria.reduce((sum,c)=>sum + scores[c.key], 0) : null;
     return {plan, idx, originalIndex: state.selectedCandidateIndices[idx], scores, complete, total};
   });
 }
@@ -808,7 +822,7 @@ function decideWinner(evals){
   const sorted = [...complete].sort((a,b)=>{
     if(b.total !== a.total) return b.total - a.total;
     for(const key of tieBreakerOrder){
-      if((b.scores[key] || 0) !== (a.scores[key] || 0)) return (b.scores[key] || 0) - (a.scores[key] || 0);
+      if(b.scores[key] !== a.scores[key]) return b.scores[key] - a.scores[key];
     }
     return 0;
   });
@@ -839,13 +853,13 @@ function renderEvaluation(){
   </table>`;
 
   const rows = selected.map((plan, i)=>{
-    const scoreCells = evaluationCriteria.map(c => `<td>
-      <label style="display:block"><input type="radio" name="score_${i}_${c.key}" value="5" onchange="updateEvaluationResult()"> 5</label>
-      <label style="display:block"><input type="radio" name="score_${i}_${c.key}" value="3" onchange="updateEvaluationResult()"> 3</label>
-      <label style="display:block"><input type="radio" name="score_${i}_${c.key}" value="1" onchange="updateEvaluationResult()"> 1</label>
-      <div class="hint" style="font-size:12px">${safe(c.guide)}</div>
+    const scoreCells = evaluationCriteria.map(c => `<td class="score-cell">
+      <label><input type="radio" name="score_${i}_${c.key}" value="5" onchange="setScore(${i}, '${c.key}', 5)"> 5</label>
+      <label><input type="radio" name="score_${i}_${c.key}" value="3" onchange="setScore(${i}, '${c.key}', 3)"> 3</label>
+      <label><input type="radio" name="score_${i}_${c.key}" value="1" onchange="setScore(${i}, '${c.key}', 1)"> 1</label>
+      <div class="score-guide">${safe(c.guide)}</div>
     </td>`).join("");
-    return `<tr><td>${safe(plan[0])}</td>${scoreCells}<td id="total_${i}">尚未完成</td><td id="selected_${i}"></td></tr>`;
+    return `<tr><td>${safe(plan[0])}</td>${scoreCells}<td class="total-cell" id="total_${i}">尚未完成</td><td class="winner-cell" id="selected_${i}"></td></tr>`;
   }).join("");
 
   $("evaluationBox").classList.remove("hidden");
@@ -868,36 +882,39 @@ function updateEvaluationResult(){
   evals.forEach(e=>{
     const totalEl = $("total_"+e.idx);
     const selectedEl = $("selected_"+e.idx);
-    if(totalEl) totalEl.textContent = e.complete ? e.total : "尚未完成";
+    if(totalEl) totalEl.textContent = e.complete ? String(e.total) : "尚未完成";
     if(selectedEl) selectedEl.innerHTML = "";
   });
+
   const completeAll = evals.length > 0 && evals.every(e=>e.complete);
   if(!completeAll){
     const tie = $("tieBox");
     if(tie) tie.innerHTML = `<div class="hint">請完成所有候選方案的五項評分，系統才會自動選定方案。</div>`;
+    state.data.evaluation = evals;
     state.data.selectedPlan = null;
     return;
   }
+
   const decision = decideWinner(evals);
+  state.data.evaluation = evals;
+
   if(decision.winner){
     const el = $("selected_"+decision.winner.idx);
     if(el) el.innerHTML = `<strong>◎ 當選</strong>`;
-    state.data.evaluation = evals;
     state.data.selectedPlan = decision.winner.plan;
     const tie = $("tieBox");
     if(tie) tie.innerHTML = `<div class="ok">系統已依「總分 → 效益 → 可行性 → 成本 → 風險性 → 測試性」選定方案：${safe(decision.winner.plan[0])}</div>`;
   }else{
-    state.data.evaluation = evals;
     state.data.selectedPlan = null;
     const tieOptions = decision.exactTie.map(e=>`<button type="button" class="candidate-select-btn" onclick="manualSelectWinner(${e.idx})">${safe(e.plan[0])}</button>`).join(" ");
     const tie = $("tieBox");
-    if(tie) tie.innerHTML = `<div class="gate"><h3>同分方案需人工選定</h3><p>目前有兩個以上方案在總分與各項指標上完全相同，請從同分方案中選出一個優先執行方案。</p>${tieOptions}</div>`;
+    if(tie) tie.innerHTML = `<div class="gate"><h3>同分方案需人工選定</h3><p>目前有兩個以上方案在總分與各項指標上完全相同，系統無法依排序規則自動分出優先順序。請從同分方案中選出一個優先執行方案。</p>${tieOptions}</div>`;
   }
 }
 function manualSelectWinner(idx){
   const evals = getEvaluationScores();
   const selected = evals.find(e=>e.idx === idx);
-  if(!selected) return;
+  if(!selected || !selected.complete) return;
   evals.forEach(e=>{
     const el = $("selected_"+e.idx);
     if(el) el.innerHTML = "";
@@ -923,7 +940,7 @@ async function makeFinal(){
     updateEvaluationResult();
   }
   if(!state.data.selectedPlan){
-    $("finalResult").innerHTML = `<div class="error">目前同分方案尚未人工選定，請先選出一個優先執行方案。</div>`;
+    $("finalResult").innerHTML = `<div class="error">目前有完全同分方案，請先從同分方案中人工選定一個優先執行方案。</div>`;
     return;
   }
   const plan = state.data.selectedPlan;
@@ -1028,6 +1045,7 @@ function makeCandidates(){
   state.selectedCandidateIndices = [];
   state.done[4] = false;
   state.data.step4 = {candidates:state.candidates};
+  resetEvaluationState();
   $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
     <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th><th>建議判斷</th></tr>
     <tbody id="candidateTableBody"></tbody>
