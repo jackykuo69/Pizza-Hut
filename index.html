@@ -1,1186 +1,180 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>COC 商圈活動設計引導工具</title>
-  <style>
-    :root{--ink:#172033;--muted:#667085;--line:#d0d5dd;--surface:#fff;--soft:#f6f8fb;--vine:#e31b23;--vine-dark:#3e7f24;--blue:#245b9b;--danger:#b42318;--warn:#f79009;}
-    *{box-sizing:border-box} body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:#f3f5f7;color:var(--ink)}
-    header{background:#fff;border-bottom:1px solid var(--line);padding:18px 24px;position:sticky;top:0;z-index:10} .header-inner{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px} h1{font-size:28px;margin:0;color:#2f3a4a}.subtitle{margin-top:6px;color:var(--muted);font-size:14px}.badge{background:#eef7e8;color:var(--vine-dark);padding:8px 12px;border-radius:999px;font-weight:800;white-space:nowrap;font-size:14px}
-    main{max-width:1180px;margin:20px auto 60px;padding:0 16px}.notice{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;padding:12px 14px;border-radius:10px;margin-bottom:16px;font-size:14px;line-height:1.6}.notice.blue{background:#f8fafc;border-color:#cbd5e1;color:#334155}.layout{display:block} aside{display:none}.stage{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:#fff}.stage.current{border-color:var(--vine);background:#f4fbef}.stage.done{border-color:#a6d78c;background:#fbfff8}.stage.locked{opacity:.68;background:#fafafa}.stage-title{font-weight:900;font-size:15px}.stage-meta{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}.lock{font-size:13px;margin-top:8px;font-weight:800}
-    section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:16px} h2{margin:0 0 8px;font-size:24px;color:#263142}h3{margin:18px 0 10px;font-size:18px;color:#263142}.hint{color:var(--muted);font-size:14px;margin:0 0 14px;line-height:1.6}.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}.card.selectable{cursor:pointer}.card.selectable:hover{border-color:#9dc987;background:#fbfff8}.card.selected{border-color:var(--vine);background:#eef7e8;box-shadow:0 0 0 2px rgba(98,165,58,.12)}.type-code{font-size:18px;font-weight:900;color:var(--blue);margin-bottom:6px}.type-title{font-size:18px;font-weight:900;color:var(--vine-dark);margin-bottom:8px}
-    label.choice{display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;margin:6px 0;cursor:pointer;align-items:flex-start;background:#fff;line-height:1.5}label.choice:hover{background:#fbfff8;border-color:#b7dba8}input[type=text],textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit}textarea{min-height:84px;resize:vertical}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.primary{border:0;background:var(--vine);color:white;font-weight:900;border-radius:10px;padding:11px 18px;cursor:pointer;font-size:15px}.primary:hover{background:var(--vine-dark)}.secondary{border:1px solid var(--line);background:white;color:var(--ink);font-weight:800;border-radius:10px;padding:10px 16px;cursor:pointer;font-size:15px}.result{margin-top:18px;border:1px solid #d9ead3;background:#fbfff8;border-radius:12px;padding:14px}.gate{border:1px solid #fedf89;background:#fff8e6;border-radius:12px;padding:14px;margin-top:18px}.gate h3{margin-top:0;color:#7a4d00}.locked-box{border:1px dashed var(--line);background:#fafafa;border-radius:12px;padding:18px;text-align:center;color:var(--muted)}table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th{background:var(--vine);color:#fff;text-align:left;padding:10px;border:1px solid #79b25b;vertical-align:top}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fafcf9}.tag{display:inline-block;background:#eef7e8;color:var(--vine-dark);border:1px solid #bfdfae;border-radius:999px;padding:3px 8px;margin:2px;font-size:12px;font-weight:800}.error{color:var(--danger);font-weight:800;margin-top:8px}.ok{color:#027a48;font-weight:800;margin-top:8px}.hidden{display:none!important}.definition{background:#f8fafc;border:1px solid #d9e2ec;border-radius:12px;padding:12px;margin:10px 0}.admin-link{display:block;margin-top:14px;color:var(--blue);font-weight:800;text-decoration:none}
-    @media(max-width:900px){.layout{grid-template-columns:1fr}aside{display:none}.grid-2,.grid-3{grid-template-columns:1fr}.header-inner{align-items:flex-start;flex-direction:column}h1{font-size:24px}}
-  
-  :root{
-    --ph-red:#e31b23;
-    --ph-red-soft:#fff1f1;
-    --ph-red-line:#f3c7c9;
-    --ph-ink:#2b2b2b;
-    --ph-bg:#faf7f5;
-  }
-  body{
-    background-color:var(--ph-bg);
-    background-image:
-      radial-gradient(circle at 8% 10%, rgba(227,27,35,.05) 0 2px, transparent 2px),
-      radial-gradient(circle at 82% 16%, rgba(227,27,35,.04) 0 3px, transparent 3px),
-      radial-gradient(circle at 18% 80%, rgba(227,27,35,.04) 0 2px, transparent 2px),
-      linear-gradient(135deg, rgba(227,27,35,.03) 0%, rgba(227,27,35,0) 20%),
-      linear-gradient(315deg, rgba(227,27,35,.03) 0%, rgba(227,27,35,0) 18%);
-  }
-  .ph-brand-chip{
-    display:inline-block;
-    margin:4px 0 18px;
-    padding:8px 14px;
-    border-radius:999px;
-    background:var(--ph-red-soft);
-    color:var(--ph-red);
-    border:1px solid var(--ph-red-line);
-    font-weight:800;
-    font-size:14px;
-    letter-spacing:.3px;
-  }
-
-
-.ph-logo{width:86px;height:86px;object-fit:contain;flex:0 0 auto}
-.header-copy{min-width:0}
-.coc-sheet{background:#fff;border-color:#f3c7c9}
-.coc-sheet-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:12px}
-.coc-sheet-head h3{margin:0;font-size:24px}
-.coc-sheet-logo{width:74px;height:74px;object-fit:contain}
-.coc-table th{background:#e31b23;border-color:#c8161d;color:#fff}
-.coc-rowhead{background:#b94a4a!important;color:#fff!important;font-weight:900;text-align:center;width:120px}
-.coc-table ul,.coc-table ol{margin:6px 0 10px 20px;padding:0}
-.coc-table strong{display:block;color:#172033;margin:8px 0 4px}
-@media(max-width:700px){.ph-logo{width:64px;height:64px}.coc-sheet-head{align-items:flex-start}.coc-sheet-logo{width:56px;height:56px}}
-
-
-.other-input{margin-top:8px;width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:10px;font-size:15px;background:#fff}
-.other-input.hidden{display:none}
-.candidate-select-wrap{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
-.candidate-select-btn{background:#fff;color:#172033;border:1px solid #d0d5dd;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
-.candidate-select-btn.selected{background:#e31b23;color:#fff;border-color:#e31b23}
-.selected-summary{background:#fff8f8;border:1px solid #f3c7c9;border-radius:12px;padding:12px;margin-top:12px;color:#7a1418}
-.export-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-@media print{
-  body{background:#fff!important}
-  header, #step0, #step1, #step2, #step3, #candidateResult, #finalBox > h3, #finalBox > p, #finalBox > .actions, .candidate-select-wrap, .selected-summary, .export-actions, .no-print, button{display:none!important}
-  main{max-width:none;margin:0;padding:0}
-  section{border:0;padding:0;margin:0}
-  #step4{display:block!important}
-  #finalBox{display:block!important}
-  #finalResult{display:block!important}
-  .result{break-inside:avoid;page-break-inside:avoid;border:1px solid #ddd!important;margin-bottom:16px}
-  table{font-size:10.5pt}
-}
-
-.score-cell label{display:inline-block;margin:2px 8px 2px 0}.score-guide{font-size:12px;color:#475467;line-height:1.65;margin-top:6px}.total-cell{font-weight:800}.winner-cell{font-weight:800;color:#ed1c24}
-
-.choice .choice-title{font-weight:800;display:block;margin-bottom:4px}
-.choice .choice-desc{font-size:13px;color:#475467;line-height:1.55;display:block}
-.eval-table{table-layout:fixed;width:100%}
-.eval-table th,.eval-table td{vertical-align:top;word-break:break-word}
-.eval-table .candidate-col{width:12%}
-.eval-table .criterion-col{width:15%}
-.eval-table .total-col{width:5%}
-.eval-table .winner-col{width:8%}
-.score-cell label{display:inline-block;margin:2px 8px 2px 0;white-space:nowrap}
-.score-guide{font-size:12px;color:#475467;line-height:1.65;margin-top:6px}
-.total-cell{font-weight:800;text-align:center}
-.winner-cell{font-weight:800;color:#ed1c24;text-align:center}
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COCA 商圈活動設計框架</title>
+<style>
+:root{--ink:#172033;--muted:#667085;--line:#d0d5dd;--surface:#fff;--soft:#f6f8fb;--brand:#e31b23;--brand2:#245b9b;--good:#3e7f24;--goodbg:#eef7e8;--warn:#f79009;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;background:#f3f5f7;color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px 24px;position:sticky;top:0;z-index:10}.header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:16px}.logo{height:42px;object-fit:contain}.title-wrap{flex:1}h1{font-size:27px;margin:0;color:#263142}.subtitle{margin-top:6px;color:var(--muted);font-size:14px;line-height:1.5}.badge{background:#fff1f1;color:var(--brand);padding:8px 12px;border-radius:999px;font-weight:900;white-space:nowrap;font-size:14px}
+main{max-width:1200px;margin:20px auto 60px;padding:0 16px}.notice{background:#fff8e6;border:1px solid #fedf89;color:#7a4d00;padding:12px 14px;border-radius:12px;margin-bottom:16px;font-size:14px;line-height:1.65}.notice.blue{background:#f8fafc;border-color:#cbd5e1;color:#334155}.notice.green{background:#f0fdf4;border-color:#bbf7d0;color:#14532d}.notice.red{background:#fff1f1;border-color:#fecaca;color:#7f1d1d}
+section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:0 1px 2px rgba(16,24,40,.04)}h2{margin:0 0 8px;font-size:24px;color:#263142}h3{margin:18px 0 10px;font-size:18px;color:#263142}.hint{color:var(--muted);font-size:14px;margin:0 0 14px;line-height:1.6}.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}.card.selected,.result-card{border-color:#92c472;background:#f4fbef}.small{font-size:13px;color:var(--muted);line-height:1.5}.type-pill{display:inline-block;background:#eef2ff;color:#243e7d;border-radius:999px;padding:4px 9px;font-weight:900;margin:2px 4px 2px 0}.type-code{font-size:15px;font-weight:900;color:var(--brand2)}.type-title{font-size:16px;font-weight:900;color:#263142;margin:3px 0}.type-desc{font-size:13px;color:#475467;line-height:1.5}
+label.choice{display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;margin:6px 0;cursor:pointer;align-items:flex-start;background:#fff;line-height:1.5}label.choice:hover{background:#fbfff8;border-color:#b7dba8}label.choice input{margin-top:4px}input[type=text],input[type=password],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:#fff}textarea{min-height:92px;line-height:1.6;resize:vertical}.form-row{margin:12px 0}.form-row label{font-weight:900;display:block;margin-bottom:6px}.secondary-select{margin-top:8px}.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}button{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:10px 14px;font-weight:900;cursor:pointer;font-size:15px}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button.ghost{background:#eef2f7;color:#344054}button:disabled{opacity:.5;cursor:not-allowed}.code-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.code-row input{max-width:260px}.hidden{display:none!important}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:10px}th{background:#e31b23;color:#fff;text-align:left;padding:10px;border:1px solid #c8161d;vertical-align:top}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fff8f8}.eval th{text-align:center}.eval td{text-align:center}.eval td:first-child{text-align:left}.eval select{min-width:82px;font-size:14px;padding:8px}.priority-table select{min-width:90px}.score{font-weight:900;color:#245b9b}.winner{font-weight:900;color:#b42318}.footer-actions{position:sticky;bottom:0;background:rgba(243,245,247,.94);border-top:1px solid var(--line);padding:12px 0;margin-top:24px;backdrop-filter:blur(8px)}.footer-actions .inner{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;justify-content:space-between;gap:12px;align-items:center}.stage-list{display:flex;gap:8px;flex-wrap:wrap}.stage-pill{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px;font-weight:900}.stage-pill.done{background:#f0fdf4;border-color:#86efac;color:#166534}.stage-pill.current{background:#fff1f1;border-color:#fca5a5;color:#991b1b}
+pre{white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:13px;line-height:1.5;overflow:auto}.loading{display:inline-block;width:16px;height:16px;border:3px solid #fff;border-bottom-color:transparent;border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle;margin-right:6px}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:800px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.header-inner{align-items:flex-start;flex-direction:column}.logo{height:36px}.footer-actions .inner{align-items:flex-start;flex-direction:column}}
+@media print{header,.notice,.btns,.footer-actions,.code-row{display:none!important}body{background:#fff}section{box-shadow:none;break-inside:avoid}}
 </style>
-
-<style id="v16-extra">
-.other-input{margin-top:8px;width:100%;border:1px solid #d0d5dd;border-radius:10px;padding:10px;font-size:15px;background:#fff}
-.other-input.hidden{display:none}
-.candidate-select-btn{background:#fff;color:#172033;border:1px solid #d0d5dd;border-radius:999px;padding:8px 14px;font-weight:900;cursor:pointer}
-.candidate-select-btn.selected{background:#e31b23;color:#fff;border-color:#e31b23}
-.selected-summary{background:#fff8f8;border:1px solid #f3c7c9;border-radius:12px;padding:12px;margin:12px 0;color:#7a1418}
-.export-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-@media print{
-  body{background:#fff!important}
-  header, #step0, #step1, #step2, #step3, #candidateResult, #finalBox > h3, #finalBox > p, #finalBox > .actions, .selected-summary, .export-actions, .no-print, button{display:none!important}
-  main{max-width:none;margin:0;padding:0}
-  section{border:0;padding:0;margin:0}
-  #step4{display:block!important}
-  #finalBox{display:block!important}
-  #finalResult{display:block!important}
-  .result{break-inside:avoid;page-break-inside:avoid;border:1px solid #ddd!important;margin-bottom:16px}
-  table{font-size:10.5pt}
-}
-</style>
-
 </head>
 <body>
 <header>
   <div class="header-inner">
-    <div class="header-copy">
-      <h1>COC 商圈活動設計引導工具</h1>
-      <div class="ph-brand-chip">Pizza Hut 商圈活動內訓工具</div>
-      <div class="subtitle">依講師節奏完成 COC 診斷與 Pizza Hut 商圈活動設計；完成第四階段後才正式送出</div>
+    <img class="logo" src="assets/pizza-logo.png" alt="Pizza Hut">
+    <div class="title-wrap">
+      <h1>COCA 商圈活動設計框架</h1>
+      <div class="subtitle">Customer × Organization × Constraints × Action｜看見顧客、盤點我們、看懂限制、設計行動</div>
     </div>
-    <img class="ph-logo" src="./assets/pizza-logo.png" alt="Pizza Hut logo">
+    <div class="badge">課堂引導工具</div>
   </div>
 </header>
-
 <main>
-  <div class="layout"><div>
-    <section id="step0">
-      <h2>Step 0｜小組資料</h2>
-      <p class="hint">先確認小組與商圈屬性。第一層是 Pizza Hut 商圈類別；第二層用來選擇更細的實際商圈／活動情境。完成第四階段後，才會正式送出講師後台。</p>
-      <div class="grid-2">
-        <div>
-          <h3>小組資訊</h3>
-          <label>組別</label>
-          <input type="text" id="groupName" placeholder="例如：第一組">
-          <br><br>
-          <label>門店名稱（可選填）</label>
-          <input type="text" id="storeName" placeholder="例如：OO店">
-        </div>
-        <div>
-          <h3>第一層｜商圈類別</h3>
-          <div class="card selectable district" data-code="R1" data-name="住宅區">
-            <div class="type-code">R1</div><div class="type-title">住宅區</div>
-            <div>住宅區，私宅為主；目標族群 IA 明確，銷售在平日、假日、週末之間有明顯高低起伏。</div>
-          </div>
-          <div class="card selectable district" data-code="COM" data-name="商辦區" style="margin-top:12px">
-            <div class="type-code">COM</div><div class="type-title">商辦區</div>
-            <div>可包含辦公室或工業大樓；80% 銷售由上班族與／或居民帶動。</div>
-          </div>
-          <div class="card selectable district" data-code="Sub" data-name="第三城鎮／One store town" style="margin-top:12px">
-            <div class="type-code">Sub</div><div class="type-title">第三城鎮／One store town</div>
-            <div>OST：租金低、利潤率高，無大眾運輸系統，銷售主要靠市場滲透。</div>
-          </div>
-        </div>
-      </div>
-      <h3>第二層｜更細的實際商圈／活動情境</h3>
-      <div id="subtypeBox" class="locked-box">請先選擇第一層商圈類別。</div>
-      <div class="actions"><button class="primary" id="saveStep0" type="button">確認小組資料</button></div>
-      <div id="save0Msg"></div>
-      <div class="gate">
-        <h3>解鎖第一階段｜C. 顧客的需求與痛點</h3>
-        <p class="hint">請輸入講師公布的第一階段通關碼。</p>
-        <input type="text" id="code1" placeholder="請輸入通關碼">
-        <div class="actions"><button class="primary" type="button" data-unlock="1">解鎖第一階段</button></div>
-        <div id="codeMsg1"></div>
-      </div>
-    </section>
+  <div class="notice blue">本工具會先用具體問題判讀門店商圈主型與副型，再協助完成 C、O、C 盤點與 Action Design。請依照實際門店狀況作答，不需要一開始自行判斷商圈類型。</div>
 
-    <section id="step1" class="hidden">
-      <h2>Step 1｜C. 顧客的需求與痛點</h2>
-      <p class="hint">先鎖定 TA，再判斷這類顧客會在什麼情境出現、有哪些需求痛點，最後再思考為什麼可能選擇我們。</p>
-      <div id="currentDistrict" class="definition"></div>
+  <section id="step0">
+    <h2>Step 0｜先看這家店的生意從哪裡來</h2>
+    <p class="hint">請先填寫小組與門店資料，再依照你平常觀察到的實際情況作答。Q1～Q4 請先選一個「最主要」答案；若有明顯第二個情況，可再選一個「次要」答案。Q5 請單選最想強化的生意。</p>
+    <div class="grid-2">
+      <div class="form-row"><label>組別</label><input id="groupName" type="text" placeholder="例如：第 3 組"></div>
+      <div class="form-row"><label>門店名稱</label><input id="storeName" type="text" placeholder="例如：內湖○○店"></div>
+    </div>
+    <div id="step0Questions"></div>
+    <div class="btns"><button onclick="completeStep0()">完成 Step 0 並產出商圈判讀</button></div>
+    <div id="step0Result" class="hidden"></div>
+  </section>
 
-      <h3>Q1｜本次最想優先服務的顧客是誰？</h3>
-      <div id="customerDefinition" class="definition"><strong>請先選擇第二層商圈情境。</strong></div>
-      <div id="customerBox" class="grid-2 choices" data-key="customers"></div>
+  <section id="step1" class="hidden">
+    <h2>Step 1｜C. 看見顧客：三類顧客需求地圖</h2>
+    <p class="hint">不要一開始只鎖定一種顧客。請先分別盤點三類顧客的出現情境、需求痛點與可能選擇我們的理由，後面再用績效貢獻度與落地條件收斂。</p>
+    <div id="step1Cards" class="grid-3"></div>
+    <div class="btns"><button onclick="completeStep1()">完成 Step 1</button></div>
+  </section>
 
-      <h3>Q2｜這類顧客通常在什麼情境出現？</h3>
-      <p class="hint">可選 1–3 個。請依照前一題選定的主要顧客來判斷，不要回到所有顧客都想服務。</p>
-      <div class="grid-2 choices" data-key="contexts">
-        <label class="choice"><input type="checkbox" value="午餐時段">午餐時段</label>
-        <label class="choice"><input type="checkbox" value="下班返家途中">下班返家途中</label>
-        <label class="choice"><input type="checkbox" value="假日家庭活動">假日家庭活動</label>
-        <label class="choice"><input type="checkbox" value="等電影、等朋友或等交通">等電影、等朋友或等交通</label>
-        <label class="choice"><input type="checkbox" value="社區活動或市集">社區活動或市集</label>
-        <label class="choice"><input type="checkbox" value="觀光或節慶人流">觀光或節慶人流</label>
-        <label class="choice"><input type="checkbox" value="預購、外帶或外送情境">預購、外帶或外送情境</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="contextsOther">其他</label>
-        <input class="other-input hidden" id="contextsOther" type="text" placeholder="請補充其他出現情境">
-      </div>
+  <section id="unlock2" class="hidden"><h2>等待講師指示｜進入 O. 盤點我們</h2><div class="code-row"><input id="code2" placeholder="請輸入口令"><button onclick="unlockStep(2)">解鎖 Step 2</button></div><p class="hint">口令由講師公布。</p></section>
 
-      <h3>Q3｜這類顧客的主要需求或痛點是什麼？</h3>
-      <p class="hint">可選 1–3 個。請聚焦這類顧客最在意、最可能影響選擇的問題。</p>
-      <div class="grid-2 choices" data-key="pains">
-        <label class="choice"><input type="checkbox" value="趕時間，希望快速取得">趕時間，希望快速取得</label>
-        <label class="choice"><input type="checkbox" value="想方便解決一餐">想方便解決一餐</label>
-        <label class="choice"><input type="checkbox" value="不想花太多時間決定">不想花太多時間決定</label>
-        <label class="choice"><input type="checkbox" value="需要多人分享">需要多人分享</label>
-        <label class="choice"><input type="checkbox" value="需要方便外帶">需要方便外帶</label>
-        <label class="choice"><input type="checkbox" value="想要穩定、少出錯">想要穩定、少出錯</label>
-        <label class="choice"><input type="checkbox" value="需要一個接觸或回訪理由">需要一個接觸或回訪理由</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="painsOther">其他</label>
-        <input class="other-input hidden" id="painsOther" type="text" placeholder="請補充其他需求或痛點">
-      </div>
+  <section id="step2" class="hidden">
+    <h2>Step 2｜O. 盤點我們：四層作戰條件</h2>
+    <p class="hint">這一段不是只盤點品牌或門店資源，而是盤點這家店可以用來經營商圈的作戰條件。</p>
+    <div id="step2Cards" class="grid-2"></div>
+    <div class="btns"><button onclick="completeStep2()">完成 Step 2</button></div>
+  </section>
 
-      <h3>Q4｜這類顧客為什麼可能選擇我們？</h3>
-      <div class="definition">請從顧客角度判斷：這類顧客在什麼情況下會覺得「選我們比較方便、安心或值得」。</div>
-      <div class="grid-2 choices" data-key="value">
-        <label class="choice"><input type="checkbox" value="快速取得，不拖時間">快速取得，不拖時間</label>
-        <label class="choice"><input type="checkbox" value="好帶走，適合外帶">好帶走，適合外帶</label>
-        <label class="choice"><input type="checkbox" value="多人分享，容易解決一餐">多人分享，容易解決一餐</label>
-        <label class="choice"><input type="checkbox" value="熟悉安心，適合固定回訪">熟悉安心，適合固定回訪</label>
-        <label class="choice"><input type="checkbox" value="規則簡單，容易做決定">規則簡單，容易做決定</label>
-        <label class="choice"><input type="checkbox" value="可以預購、外帶或外送，不一定要現場等待">可以預購、外帶或外送，不一定要現場等待</label>
-        <label class="choice"><input type="checkbox" value="在原本活動場域就能接觸或購買，不必特地繞路">在原本活動場域就能接觸或購買，不必特地繞路</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="valueOther">其他</label>
-        <input class="other-input hidden" id="valueOther" type="text" placeholder="請補充其他可能被選擇的理由">
-      </div>
-      <div class="actions"><button class="primary" type="button" id="makePersona">產出目標客群情境</button></div>
-      <div id="personaResult"></div>
-    </section>
+  <section id="unlock3" class="hidden"><h2>等待講師指示｜進入 C. 看懂限制</h2><div class="code-row"><input id="code3" placeholder="請輸入口令"><button onclick="unlockStep(3)">解鎖 Step 3</button></div><p class="hint">口令由講師公布。</p></section>
 
-    <section id="step2" class="hidden">
-      <h2>Step 2｜O. 我們的資源與做法</h2>
-      <p class="hint">本階段不是想新方案，而是盤點目前已有的資源、做法、優勢、慣性與盲點。</p>
-      <h3>既有資源</h3>
-      <div class="grid-2 choices" data-key="resources">
-        <label class="choice"><input type="checkbox" value="品牌知名度">品牌知名度</label>
-        <label class="choice"><input type="checkbox" value="會員系統或會員資料">會員系統或會員資料</label>
-        <label class="choice"><input type="checkbox" value="既有套餐或主力商品">既有套餐或主力商品</label>
-        <label class="choice"><input type="checkbox" value="外送平台">外送平台</label>
-        <label class="choice"><input type="checkbox" value="門店取餐區與外帶動線">門店取餐區與外帶動線</label>
-        <label class="choice"><input type="checkbox" value="熟客關係">熟客關係</label>
-        <label class="choice"><input type="checkbox" value="社區、商場或外部場地合作機會">社區、商場或外部場地合作機會</label>
-      </div>
-      <h3>既有做法／優勢／盲點補充</h3>
-      <textarea id="resourceNote" placeholder="例如：平日外送穩定、熟客多，但很少主動走出門店接觸社區。"></textarea>
-      <div class="actions"><button class="primary" type="button" id="makeResources">整理資源與做法</button></div>
-      <div id="resourcesResult"></div>
-    </section>
+  <section id="step3" class="hidden">
+    <h2>Step 3｜C. 看懂限制：限制、影響與處理方向</h2>
+    <p class="hint">請判斷哪些條件與限制會影響顧客接觸、購買、體驗或活動執行；不是只列困難，而是看懂限制如何影響行動。</p>
+    <div class="grid-2">
+      <div class="card"><h3>Q1｜哪些條件與限制必須面對？</h3><div id="constraintChoices"></div></div>
+      <div class="card"><h3>Q2｜這些限制造成什麼影響？</h3><div id="impactChoices"></div></div>
+    </div>
+    <div class="form-row"><label>Q3｜相對價值或處理方向</label><textarea id="directionNote" placeholder="例如：不期待顧客長時間停留，而聚焦在預購、快取、店外合作或小規模測試。"></textarea></div>
+    <div class="btns"><button onclick="completeStep3()">完成 Step 3，進入客群優先判斷</button></div>
+  </section>
 
-    <section id="step3" class="hidden">
-      <h2>Step 3｜C. 商圈條件與限制</h2>
-      <p class="hint">請先辨識哪些條件與限制是目前必須面對的，再判斷造成的影響，最後找出相對價值或降低影響的處理方向。</p>
+  <section id="priority" class="hidden">
+    <h2>客群經營優先判斷表</h2>
+    <p class="hint">請針對三類顧客評估低／中／高。系統內部會將低／中／高對應為 1／3／5，並以績效貢獻度 40%、其他四項各 15% 計算。績效貢獻度是主判斷，其他四項是落地條件。</p>
+    <div id="priorityTable"></div>
+    <div id="priorityResult" class="hidden"></div>
+    <div class="btns"><button onclick="completePriority()">完成客群優先判斷</button></div>
+  </section>
 
-      <h3>Q1｜哪些條件與限制是目前必須面對的？</h3>
-      <p class="hint">可選 1–3 個。這裡處理短時間不容易改變，但設計活動時必須納入考量的因素。</p>
-      <div class="grid-2 choices" data-key="constraints">
-        <label class="choice"><input type="checkbox" value="地點位置或能見度不足">地點位置或能見度不足</label>
-        <label class="choice"><input type="checkbox" value="停車或交通不方便">停車或交通不方便</label>
-        <label class="choice"><input type="checkbox" value="商圈人流不穩定">商圈人流不穩定</label>
-        <label class="choice"><input type="checkbox" value="客流集中在特定時段">客流集中在特定時段</label>
-        <label class="choice"><input type="checkbox" value="附近競爭店很多">附近競爭店很多</label>
-        <label class="choice"><input type="checkbox" value="人力不足或排班吃緊">人力不足或排班吃緊</label>
-        <label class="choice"><input type="checkbox" value="門店前場、取餐區或等候空間有限">門店前場、取餐區或等候空間有限</label>
-        <label class="choice"><input type="checkbox" value="外送與現場取餐動線交疊">外送與現場取餐動線交疊</label>
-        <label class="choice"><input type="checkbox" value="外送平台尖峰塞單或規則限制">外送平台尖峰塞單或規則限制</label>
-        <label class="choice"><input type="checkbox" value="學校、辦公、住宅、商場或地方活動作息限制">學校、辦公、住宅、商場或地方活動作息限制</label>
-        <label class="choice"><input type="checkbox" value="社區活動或外部場地合作限制">社區活動或外部場地合作限制</label>
-        <label class="choice"><input type="checkbox" value="商場、房東或社區規定多">商場、房東或社區規定多</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="constraintsOther">其他</label>
-        <input class="other-input hidden" id="constraintsOther" type="text" placeholder="請補充其他條件與限制">
-      </div>
+  <section id="unlock4" class="hidden"><h2>等待講師指示｜進入 A. 設計行動</h2><div class="code-row"><input id="code4" placeholder="請輸入口令"><button onclick="unlockStep(4)">解鎖 Step 4</button></div><p class="hint">口令由講師公布。</p></section>
 
-      <h3>Q2｜這些條件與限制對顧客或活動造成什麼影響？</h3>
-      <div class="grid-2 choices" data-key="impacts">
-        <label class="choice"><input type="checkbox" value="顧客不容易自然想到我們">顧客不容易自然想到我們</label>
-        <label class="choice"><input type="checkbox" value="顧客覺得不方便到店或取餐">顧客覺得不方便到店或取餐</label>
-        <label class="choice"><input type="checkbox" value="等待時間不穩定">等待時間不穩定</label>
-        <label class="choice"><input type="checkbox" value="尖峰取餐或外送容易混亂">尖峰取餐或外送容易混亂</label>
-        <label class="choice"><input type="checkbox" value="活動要設計在店外、取餐前後或外部場域">活動要設計在店外、取餐前後或外部場域</label>
-        <label class="choice"><input type="checkbox" value="顧客不容易知道門店正在推什麼">顧客不容易知道門店正在推什麼</label>
-        <label class="choice"><input type="checkbox" value="顧客接觸時間短，不容易理解複雜活動">顧客接觸時間短，不容易理解複雜活動</label>
-        <label class="choice"><input type="checkbox" value="人力難以支撐長時間活動">人力難以支撐長時間活動</label>
-        <label class="choice"><input type="checkbox" value="只能鎖定特定時段或特定客群">只能鎖定特定時段或特定客群</label>
-        <label class="choice"><input type="checkbox" value="需要靠社區、商場、學校或地方合作接觸顧客">需要靠社區、商場、學校或地方合作接觸顧客</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="impactsOther">其他</label>
-        <input class="other-input hidden" id="impactsOther" type="text" placeholder="請補充其他影響">
-      </div>
-
-      <h3>Q3｜可以形成什麼相對價值，或應該如何降低影響？</h3>
-      <div class="definition"><strong>提醒：</strong>相對價值不是把限制硬說成優勢，而是在特定顧客、時段與情境下，找出這個條件可能產生的不同價值。若找不到相對價值，就承認它仍是限制，改用降低影響、改善流程或避開限制的方式處理。</div>
-      <div class="grid-2 choices" data-key="directions">
-        <label class="choice"><input type="checkbox" value="不期待顧客自然想到我們，而聚焦在主動走進社區或外部場域">不期待顧客自然想到我們，而聚焦在主動走進社區或外部場域</label>
-        <label class="choice"><input type="checkbox" value="不期待改變門店空間，而聚焦在優化排隊、取餐或外送分流">不期待改變門店空間，而聚焦在優化排隊、取餐或外送分流</label>
-        <label class="choice"><input type="checkbox" value="不期待改變商圈結構，而聚焦在配合學校、辦公、社區或地方活動節奏">不期待改變商圈結構，而聚焦在配合學校、辦公、社區或地方活動節奏</label>
-        <label class="choice"><input type="checkbox" value="不期待服務所有顧客，而聚焦在特定時段或特定客群">不期待服務所有顧客，而聚焦在特定時段或特定客群</label>
-        <label class="choice"><input type="checkbox" value="不期待用最低價吸引顧客，而聚焦在穩定、安心、少出錯">不期待用最低價吸引顧客，而聚焦在穩定、安心、少出錯</label>
-        <label class="choice"><input type="checkbox" value="不期待設計複雜活動，而聚焦在簡單清楚、容易參與的選擇">不期待設計複雜活動，而聚焦在簡單清楚、容易參與的選擇</label>
-        <label class="choice"><input type="checkbox" value="不期待與競爭店全面對打，而聚焦在特定時段、外帶取餐或預購需求">不期待與競爭店全面對打，而聚焦在特定時段、外帶取餐或預購需求</label>
-        <label class="choice"><input type="checkbox" value="不把來客集中只看成壓力，而聚焦在尖峰前準備與尖峰中引導">不把來客集中只看成壓力，而聚焦在尖峰前準備與尖峰中引導</label>
-        <label class="choice"><input type="checkbox" value="不期待顧客一定現場消費，而聚焦在預購、外帶或外送延伸消費">不期待顧客一定現場消費，而聚焦在預購、外帶或外送延伸消費</label>
-        <label class="choice other-choice"><input type="checkbox" value="其他" data-other-target="directionsOther">其他</label>
-        <input class="other-input hidden" id="directionsOther" type="text" placeholder="請補充其他相對價值或處理方向">
-      </div>
-      <div class="actions"><button class="primary" type="button" id="makeConstraints">整理條件與限制</button></div>
-      <div id="constraintsResult"></div>
-    </section>
-
-    <section id="step4" class="hidden">
-      <h2>Step 4｜A. 下一步行動設計</h2>
-      <p class="hint">系統會根據前三階段診斷，自動提出同一組 COC 結果下的候選行動方向。請先選出至少 2 個候選行動進入方案評估。</p>
-      <div id="candidateResult"></div>
-      <div id="evaluationBox" class="hidden"></div>
-      <div id="finalBox" class="hidden"></div>
-    </section>
-  </div></div>
+  <section id="step4" class="hidden">
+    <h2>Step 4｜A. 設計行動：AI 整合 COC 產生候選方案</h2>
+    <p class="hint">系統會整合 Step 0、C、O、C、客群優先判斷與經營目標，產出候選行動方案。每個方案都要說明它如何回應顧客、運用我們的條件、處理限制並可小規模測試。</p>
+    <div class="btns"><button id="genBtn" onclick="generateActions()">產生候選行動方案</button><button class="secondary" onclick="print()">列印／另存 PDF</button></div>
+    <div id="aiNotice"></div>
+    <div id="candidateArea"></div>
+    <div id="evaluationArea" class="hidden"></div>
+    <div id="finalArea" class="hidden"></div>
+  </section>
 </main>
-
+<div class="footer-actions">
+  <div class="inner">
+    <div class="stage-list" id="stagePills"></div>
+    <div class="small">講師口令：看見顧客／盤點我們／看懂限制／設計行動</div>
+  </div>
+</div>
 
 <script>
-const codes = {1:"看見顧客", 2:"盤點我們", 3:"看懂限制", 4:"設計行動"};
-const state = {
-  id: sessionStorage.getItem("coc_submission_id") || crypto.randomUUID(),
-  submissionKey: sessionStorage.getItem("coc_submission_key") || "",
-  unlocked: 0,
-  current: 0,
-  done: {},
-  district: null,
-  subtype: null,
-  candidates: [],
-  selectedCandidateIndices: [],
-  data: {}
+const TYPE_MAP={
+  A:{label:'商業辦公型商圈',short:'商辦',desc:'工作人口、上班族、公司、園區、午餐與團訂需求'},
+  B:{label:'社區住宅型商圈',short:'住宅',desc:'居住人口、家庭客、附近居民、晚餐與週末需求'},
+  C:{label:'學生學區型商圈',short:'學區',desc:'學生、學校、補習班、放學後與活動訂單'},
+  D:{label:'交通高人流型商圈',short:'交通',desc:'車站、捷運、商場動線、過路客、快速外帶'},
+  E:{label:'休閒觀光／商場型商圈',short:'休閒商場',desc:'百貨商場、夜市、觀光景點、影城、娛樂場所、地方活動人潮'}
 };
-sessionStorage.setItem("coc_submission_id", state.id);
-
-const stages = [
-  ["Step 0","小組資料","可直接填寫"],
-  ["Step 1","C. 顧客的需求與痛點","等待講師公布"],
-  ["Step 2","O. 我們的資源與做法","等待講師公布"],
-  ["Step 3","C. 商圈條件與限制","等待講師公布"],
-  ["Step 4","A. 下一步行動設計","等待講師公布"]
+const STEP0_Q=[
+ {id:'q1',title:'Q1｜你的店附近，哪一種環境最明顯？',hint:'請以對來客或業績影響最大的周邊環境為主。',choices:{A:'辦公與工作區｜辦公大樓、公司、工業區、科技園區',B:'住宅與生活區｜住宅社區、傳統市場、生活型商店、住家巷弄',C:'學校與補教區｜高中職、大專院校、補習班、安親班、學生聚集點',D:'交通與轉乘區｜捷運站、火車站、高鐵站、轉運站、公車轉乘點',E:'休閒觀光與商場人潮區｜百貨商場、夜市、觀光景點、影城、娛樂場所、地方活動場域'}},
+ {id:'q2',title:'Q2｜你的店通常哪一個時段最忙？',hint:'請以最常形成來客或出餐壓力的時段為主。',choices:{A:'平日中午｜主要是午餐時段',B:'平日晚餐｜主要是下班後或晚餐時段',C:'放學後到晚上｜學生下課、補習前後或晚間活動時段',D:'通勤與轉乘尖峰｜上下班、轉乘、進出車站或商場人流時段',E:'假日、節慶或特殊活動日｜週末、連假、節慶、觀光旺季或地方活動'}},
+ {id:'q3',title:'Q3｜你的店最常見的訂單型態是哪一種？',hint:'請以主力訂單樣貌為主。',choices:{A:'個人快速餐｜一人份、快速解決、等待時間短',B:'家庭分享餐｜多人一起吃、家庭或朋友共享、份量較大',C:'團體預訂餐｜公司、學校、社團、活動、會議或大量預訂',D:'即買即走餐｜現場看到、臨時購買、拿了就走',E:'活動／節慶波動餐｜受假日、節慶、商場活動、地方活動或觀光人潮影響明顯'}},
+ {id:'q4',title:'Q4｜你的店最容易接觸到哪一類外部對象？',hint:'請以最容易建立接觸或合作的外部對象為主。',choices:{A:'公司與工作單位｜公司、辦公室、園區、工廠、企業窗口',B:'社區與居民單位｜社區住戶、管委會、里辦公室、附近熟客、家庭客',C:'學校與學生單位｜學校、補習班、安親班、社團、班級、學生族群',D:'交通與過路人流｜轉乘客、旅客、通勤客、商場流動人潮',E:'休閒與地方合作單位｜商場、夜市、觀光點、娛樂場所、地方活動主辦單位'}}
 ];
-
-function $(id){ return document.getElementById(id); }
-function safe(v){
-  return String(v ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[s]));
-}
-function resetEvaluationState(){
-  state.evalScores = {};
-  state.data.evaluation = null;
-  state.data.selectedPlan = null;
-}
-function subtypeFinal(){
-  const base = state.subtype || "";
-  const input = $("subtypeOtherInput");
-  if(base.startsWith("其他")){
-    const detail = (input?.value || "").trim();
-    return detail ? `${base}：${detail}` : base;
-  }
-  return base;
-}
-function currentKey(){
-  return [
-    ($("groupName")?.value || "").trim(),
-    ($("storeName")?.value || "").trim(),
-    state.district?.code || "",
-    subtypeFinal()
-  ].join("|");
-}
-function ensureSubmissionId(){
-  const key = currentKey();
-  if(!state.submissionKey){
-    state.submissionKey = key;
-    sessionStorage.setItem("coc_submission_key", key);
-    sessionStorage.setItem("coc_submission_id", state.id);
-    return;
-  }
-  if(key && state.submissionKey !== key){
-    state.id = crypto.randomUUID();
-    state.submissionKey = key;
-    sessionStorage.setItem("coc_submission_id", state.id);
-    sessionStorage.setItem("coc_submission_key", key);
-  }
-}
-function checked(key){
-  return Array.from(document.querySelectorAll(`.choices[data-key="${key}"] input:checked`)).map(i=>{
-    if(i.value === "其他"){
-      const target = i.dataset.otherTarget;
-      const txt = target ? ($(target)?.value || "").trim() : "";
-      return txt ? `其他：${txt}` : "其他";
-    }
-    return i.value;
-  });
-}
-function validateOther(key){
-  const checkedOther = document.querySelector(`.choices[data-key="${key}"] input[value="其他"]:checked`);
-  if(!checkedOther) return true;
-  const target = checkedOther.dataset.otherTarget;
-  const input = target ? $(target) : null;
-  return !!(input && input.value.trim());
-}
-function tags(items){
-  return (items && items.length ? items : ["尚未選擇"]).map(x=>`<span class="tag">${safe(x)}</span>`).join("");
-}
-function cocList(items){
-  if(!Array.isArray(items) || !items.length) return "<div class='hint'>尚未填寫</div>";
-  return `<ul>${items.map(x=>`<li>${safe(x)}</li>`).join("")}</ul>`;
-}
-function bindOtherInputs(){
-  document.querySelectorAll('input[data-other-target]').forEach(cb=>{
-    const target = $(cb.dataset.otherTarget);
-    if(!target) return;
-    const sync = ()=>{
-      target.classList.toggle('hidden', !cb.checked);
-      if(cb.checked) target.focus();
-      if(!cb.checked) target.value = '';
-    };
-    if(!cb.dataset.otherBound){
-      cb.addEventListener('change', sync);
-      cb.dataset.otherBound = '1';
-    }
-    sync();
-  });
-}
-function bindCustomerRadio(){
-  document.querySelectorAll('input[name="customerChoice"]').forEach(r=>{
-    if(r.dataset.radioBound) return;
-    r.dataset.radioBound = "1";
-    r.addEventListener("change", ()=>{
-      const other = document.querySelector('input[name="customerChoice"][value="其他"]');
-      const box = $("customersOther");
-      if(box){
-        const show = !!(other && other.checked);
-        box.classList.toggle("hidden", !show);
-        if(show) box.focus();
-        if(!show) box.value = "";
-      }
-    });
-  });
-}
-function renderStages(){
-  const box = $("stageList");
-  if(!box) return;
-  box.innerHTML = stages.map((s,i)=>{
-    const cls = i===state.current ? "current" : state.done[i] ? "done" : i>state.unlocked ? "locked" : "";
-    const icon = i===state.current ? "🔓" : state.done[i] ? "✅" : i>state.unlocked ? "🔒" : "🔓";
-    return `<div class="stage ${cls}">
-      <div class="stage-title">${icon} ${s[0]}｜${s[1]}</div>
-      <div class="stage-meta">${s[2]}</div>
-      <div class="lock">${i>state.unlocked ? "等待講師口令" : i===state.current ? "目前階段" : "已開放"}</div>
-    </div>`;
-  }).join("");
-}
-function showStep(n){
-  [0,1,2,3,4].forEach(i => $("step"+i)?.classList.add("hidden"));
-  if(n <= state.unlocked){
-    state.current = n;
-    $("step"+n)?.classList.remove("hidden");
-  }
-  renderStages();
-  bindOtherInputs();
-  bindCustomerRadio();
-  if(n === 4 && state.candidates.length === 0){
-    makeCandidates();
-  }
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-function validateStep0(){
-  if(!($("groupName")?.value || "").trim()){
-    return "請先填寫組別，後台才有辦法辨識資料。";
-  }
-  if(!state.district || !state.subtype){
-    return "請先選擇第一層商圈類別與第二層細分情境。";
-  }
-  if(state.subtype.startsWith("其他") && !($("subtypeOtherInput")?.value || "").trim()){
-    return "你已選擇其他細分情境，請補充具體內容。";
-  }
-  return "";
-}
-async function saveProgress(stage){
-  ensureSubmissionId();
-  const payload = {
-    id: state.id,
-    group_name: $("groupName")?.value || "",
-    store_name: $("storeName")?.value || "",
-    district_type: state.district ? `${state.district.code}｜${state.district.name}` : "",
-    district_subtype: subtypeFinal() || "",
-    current_stage: stage,
-    stage_status: JSON.stringify(state.done || {}),
-    data: JSON.stringify(state.data || {})
-  };
-  try{
-    const r = await fetch("/api/submissions", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error || "api failed");
-  }catch(e){
-    const all = JSON.parse(localStorage.getItem("coc_submissions") || "[]");
-    const idx = all.findIndex(x => x.id === payload.id);
-    const item = {...payload, updated_at:new Date().toISOString()};
-    if(idx >= 0) all[idx] = item; else all.push(item);
-    localStorage.setItem("coc_submissions", JSON.stringify(all));
-  }
-}
-function completionGate(step,next){
-  return `<div class="gate">
-    <h3>第 ${step} 階段已完成</h3>
-    <p>請先討論與確認。後續請等待講師指示。</p>
-    <p class="hint">若講師已公布通關碼，請在下方輸入。</p>
-    <input type="text" id="code${next}" placeholder="請輸入通關碼">
-    <div class="actions"><button class="primary" type="button" data-unlock="${next}">解鎖下一階段</button></div>
-    <div id="codeMsg${next}"></div>
-  </div>`;
-}
-function bindUnlocks(){
-  document.querySelectorAll("[data-unlock]").forEach(btn=>{
-    if(btn.dataset.bound) return;
-    btn.dataset.bound = "1";
-    btn.addEventListener("click", async ()=>{
-      const n = Number(btn.dataset.unlock);
-      const input = $("code"+n);
-      const msg = $("codeMsg"+n);
-      if(n === 1){
-        const step0Error = validateStep0();
-        if(step0Error){
-          if(msg) msg.innerHTML = `<div class="error">${safe(step0Error)}</div>`;
-          return;
-        }
-      }
-      if((input?.value || "").trim() === codes[n]){
-        state.unlocked = Math.max(state.unlocked, n);
-        if(msg) msg.innerHTML = '<div class="ok">通關碼正確，已解鎖。</div>';
-        showStep(n);
-      }else if(msg){
-        msg.innerHTML = '<div class="error">通關碼不正確，請依講師公布內容輸入。</div>';
-      }
-    });
-  });
-}
-
-const subtypes = {
-  R1:["社區住宅生活圈","校園／補教周邊","住宅＋商店街","住宅＋醫院／診所周邊","住宅＋交通節點","其他住宅型情境"],
-  COM:["辦公商圈","工業區／科技園區","商場／百貨","交通轉運點","醫院／診所工作圈","其他商辦型情境"],
-  Sub:["在地生活圈","觀光／節慶型商圈","地方商店街／老街","鄉鎮交通不便區","學校／社區混合區","其他第三城鎮情境"]
-};
-function subtypeDesc(x){
-  const m = {
-    "社區住宅生活圈":"周邊住戶、家庭晚餐、假日家庭需求。",
-    "校園／補教周邊":"放學、接送、補習前後、同行分食情境。",
-    "住宅＋商店街":"居民生活圈與商店、攤商、日常採買混合。",
-    "住宅＋醫院／診所周邊":"陪診、醫護、附近居民等混合需求。",
-    "住宅＋交通節點":"居民與通勤族交疊，下班外帶或順路取餐。",
-    "辦公商圈":"午休、下午茶、下班外帶、團訂需求。",
-    "工業區／科技園區":"午休固定、輪班、加班、團體訂餐。",
-    "商場／百貨":"人流受商場活動、假日、員工與逛街客影響。",
-    "交通轉運點":"通勤、轉乘、趕時間外帶或等人空檔。",
-    "醫院／診所工作圈":"醫護、行政、陪診家屬、快速外帶並存。",
-    "在地生活圈":"靠周邊居民、熟客、地方關係與重複購買。",
-    "觀光／節慶型商圈":"旅遊、假日、連假、地方活動或節慶影響。",
-    "地方商店街／老街":"觀光客與在地客混合，平假日差異大。",
-    "鄉鎮交通不便區":"大眾運輸少，需靠市場滲透、預購與社區接觸。",
-    "學校／社區混合區":"校園、社區、家庭客與在地熟客混合。"
-  };
-  return m[x] || "由使用者自行補充。";
-}
-function renderSubtypes(){
-  const arr = subtypes[state.district?.code] || [];
-  const box = $("subtypeBox");
-  box.className = "grid-2";
-  box.innerHTML = arr.map(x=>`<div class="card selectable subtype" data-name="${x}">
-    <strong>${safe(x)}</strong><div class="hint" style="margin:6px 0 0">${safe(subtypeDesc(x))}</div>
-  </div>`).join("") + `<input class="other-input hidden" id="subtypeOtherInput" type="text" placeholder="請補充其他細分情境，例如：夜市旁、返家車流、活動會場周邊">`;
-  document.querySelectorAll(".subtype").forEach(card=>{
-    card.addEventListener("click", ()=>{
-      document.querySelectorAll(".subtype").forEach(c=>c.classList.remove("selected"));
-      card.classList.add("selected");
-      state.subtype = card.dataset.name;
-      const input = $("subtypeOtherInput");
-      if(input){
-        const show = state.subtype.startsWith("其他");
-        input.classList.toggle("hidden", !show);
-        if(show) input.focus();
-        if(!show) input.value = "";
-        input.oninput = ()=>renderCurrentDistrict();
-      }
-      renderCurrentDistrict();
-      renderCustomers();
-    });
-  });
-}
-function renderCurrentDistrict(){
-  const el = $("currentDistrict");
-  if(el) el.innerHTML = `<strong>目前商圈：</strong>${safe(state.district?.code || "未選")}｜${safe(state.district?.name || "未選")}　／　<strong>細分情境：</strong>${safe(subtypeFinal() || "未選")}`;
-}
-const customerOptions = {
-  "社區住宅生活圈":["家庭客","陪伴型家庭客","附近熟客","附近第一次嘗試居民","外帶型顧客","外送型顧客"],
-  "校園／補教周邊":["校園周邊放學時段顧客","課後等待接送或補習前後的顧客","同行分食顧客","接送家庭顧客","學校教職員","附近熟客"],
-  "住宅＋商店街":["附近熟客","附近第一次嘗試居民","逛街或採買順路外帶顧客","家庭客","外帶型顧客","商店街周邊工作者"],
-  "住宅＋醫院／診所周邊":["陪診或陪伴家屬","醫護與行政人員","附近居民","快速外帶顧客","外送型顧客","附近熟客"],
-  "住宅＋交通節點":["下班順手外帶的通勤族","家庭晚餐外帶顧客","附近熟客","外帶型顧客","外送型顧客","附近第一次嘗試居民"],
-  "辦公商圈":["午休時間有限的上班族","下班順手外帶的通勤族","團訂顧客","辦公樓工作者","外送型顧客","附近熟客"],
-  "工業區／科技園區":["午休時間固定的員工","輪班或加班員工","團體訂餐顧客","下班順手外帶顧客","外送型顧客","園區周邊熟客"],
-  "商場／百貨":["逛街途中快速外帶顧客","假日家庭客","等電影或等朋友顧客","商場員工","活動或市集人流顧客","外送型顧客"],
-  "交通轉運點":["趕車前快速外帶的通勤族","剛下車快速補給的旅客","下班返家順手外帶顧客","等人或轉乘空檔顧客","外送型顧客","附近工作者"],
-  "醫院／診所工作圈":["醫護與行政人員","陪診或陪伴家屬","就診前後快速外帶顧客","需要清楚穩定快速外帶的顧客","外送型顧客","附近熟客"],
-  "在地生活圈":["在地熟客","家庭客","還不常買的在地顧客","外帶型顧客","在地社群顧客","預購或外送型顧客"],
-  "觀光／節慶型商圈":["觀光旅客","家庭旅遊客","需要快速補給的旅客","團體或同行分食顧客","當地熟客","節慶活動顧客"],
-  "地方商店街／老街":["觀光旅客","在地熟客","逛街途中外帶顧客","家庭客","周邊工作者","還不常買的在地顧客"],
-  "鄉鎮交通不便區":["在地熟客","家庭客","預購或外帶顧客","在地社群顧客","節慶或活動顧客","還不常買的在地顧客"],
-  "學校／社區混合區":["校園周邊放學時段顧客","接送家庭顧客","附近熟客","家庭客","在地社群顧客","學校教職員"]
-};
-
-const customerOptionDefinitions = {
-  "家庭客":"多人分享，方便解決一餐。",
-  "陪伴型家庭客":"大人陪同參與活動或等待過程中產生消費。",
-  "附近熟客":"已知道門店，有機會重複購買。",
-  "附近第一次嘗試居民":"住宅生活圈中需要降低嘗試門檻的顧客。",
-  "外帶型顧客":"重視快速取餐、方便帶走。",
-  "外送型顧客":"不一定到店，透過外送平台或電話完成購買。",
-  "校園周邊放學時段顧客":"放學、補習前後或接送等待時出現的顧客。",
-  "課後等待接送或補習前後的顧客":"在課後等待接送、補習前後或空檔時可能購買。",
-  "同行分食顧客":"與同學、朋友或同行者一起分享餐點。",
-  "接送家庭顧客":"接送孩子或等待過程中可能順手購買。",
-  "學校教職員":"在學校或補教周邊工作，有午餐、下午茶或外帶需求。",
-  "逛街或採買順路外帶顧客":"在商店街或採買途中順路帶走餐點。",
-  "商店街周邊工作者":"固定在周邊商店或攤商工作，有快速用餐需求。",
-  "陪診或陪伴家屬":"在醫院或診所陪同就診、等待或照顧，需要快速、方便、少等待。",
-  "醫護與行政人員":"在醫院或診所工作，用餐時間受班表與現場狀況影響。",
-  "附近居民":"住在門店周邊，可能因方便、熟悉或外帶需求而購買。",
-  "快速外帶顧客":"時間有限，希望快速取得餐點並離開。",
-  "就診前後快速外帶顧客":"就診前後時間不穩定，需要快速、方便、少等待。",
-  "需要清楚穩定快速外帶的顧客":"重視取餐流程清楚、餐點穩定、等待時間可控。",
-  "下班順手外帶的通勤族":"下班或轉乘途中順路帶餐回家。",
-  "家庭晚餐外帶顧客":"下班後或晚餐時段，想快速解決家庭用餐。",
-  "午休時間有限的上班族":"午餐時間短，重視快速、準時、少等待。",
-  "團訂顧客":"辦公室、工廠或單位一起訂餐，需要降低決策與協調成本。",
-  "辦公樓工作者":"固定在周邊工作，有午餐、下午茶或加班餐需求。",
-  "上班族／工作者":"時間有限，重視速度、穩定與方便。",
-  "通勤族":"上下班或轉乘時順手外帶，重視快速與便利。",
-  "午休時間固定的員工":"用餐時間集中且有限，重視準時與穩定供餐。",
-  "輪班或加班員工":"用餐時間不固定，可能需要預購、外帶或外送支援。",
-  "團體訂餐顧客":"多人一起訂餐，需要清楚品項、價格與取餐安排。",
-  "下班順手外帶顧客":"下班途中想順手帶餐，重視方便與快速。",
-  "園區周邊熟客":"固定在工業區或科技園區周邊出現，有機會重複購買。",
-  "逛街途中快速外帶顧客":"逛街或移動途中需要快速、好帶走的餐點。",
-  "假日家庭客":"假日與家人同行，重視分享、方便與活動搭配。",
-  "等電影或等朋友顧客":"在等待空檔中可能購買，重視方便、快速、不麻煩。",
-  "商場員工":"固定在商場工作，但用餐時間有限。",
-  "活動或市集人流顧客":"受商場活動、市集或人流帶動，可能臨時購買。",
-  "趕車前快速外帶的通勤族":"趕車或轉乘前需要快速取得、方便帶走。",
-  "剛下車快速補給的旅客":"剛抵達或轉乘時需要快速補給，重視便利與好帶走。",
-  "下班返家順手外帶顧客":"返家途中順路購買，重視快速與不繞路。",
-  "等人或轉乘空檔顧客":"等待或轉乘空檔中可能購買，重視快速與簡單決策。",
-  "附近工作者":"固定在周邊工作，有午餐、外帶或加班餐需求。",
-  "在地熟客":"已知道門店，有機會重複購買。",
-  "還不常買的在地顧客":"尚未形成購買習慣，需要提高嘗試與市場滲透。",
-  "在地社群顧客":"可透過社區、學校、地方組織或熟人關係接觸。",
-  "預購或外送型顧客":"偏好先預訂或透過外送完成購買。",
-  "觀光旅客":"旅途中需要快速補給、同行分食或方便外帶。",
-  "家庭旅遊客":"與家人同行旅遊，重視多人分享、方便與好帶走。",
-  "需要快速補給的旅客":"旅途中時間有限，需要快速、方便、能帶走的餐點。",
-  "團體或同行分食顧客":"與同行者一起分食，重視份量、分享與決策簡單。",
-  "當地熟客":"在地固定顧客，已知道門店，有機會重複購買。",
-  "節慶活動顧客":"受到地方活動、連假、節慶或人流變化帶動。",
-  "逛街途中外帶顧客":"逛街或移動途中順手外帶，重視方便與快速。",
-  "周邊工作者":"固定在周邊工作，有午餐、下午茶或外帶需求。",
-  "預購或外帶顧客":"希望先預訂或快速外帶，降低等待與不確定性。",
-  "節慶或活動顧客":"受到地方活動、連假、節慶或人流變化帶動。"
-};
-function customerOptionDefinition(x){
-  return customerOptionDefinitions[x] || "請依本次商圈情境自行判斷這類顧客的主要需求。";
-}
-
-function renderCustomers(){
-  let arr = customerOptions[state.subtype];
-  if(!arr){
-    if(state.district?.code === "COM"){
-      arr = ["上班族／工作者","團訂顧客","外帶型顧客","外送型顧客","附近熟客","通勤族"];
-    }else if(state.district?.code === "Sub"){
-      arr = ["在地熟客","還不常買的在地顧客","家庭客","在地社群顧客","節慶或活動顧客","預購或外帶顧客"];
-    }else{
-      arr = ["家庭客","陪伴型家庭客","附近熟客","附近第一次嘗試居民","外帶型顧客","外送型顧客"];
-    }
-  }
-  $("customerDefinition").innerHTML = "請單選本次活動最想優先服務的一類顧客。請聚焦一類主要顧客，不要一次服務所有顧客。";
-  arr = [...arr, "其他"];
-  $("customerBox").innerHTML = arr.map(x=>{
-    if(x === "其他"){
-      return `<label class="choice other-choice"><input type="radio" name="customerChoice" value="其他" data-other-target="customersOther"><span class="choice-title">其他</span><span class="choice-desc">若以上類型都不符合，請自行補充一類主要顧客。</span></label><input class="other-input hidden" id="customersOther" type="text" placeholder="請補充其他顧客類型">`;
-    }
-    return `<label class="choice"><input type="radio" name="customerChoice" value="${safe(x)}"><span class="choice-title">${safe(x)}</span><span class="choice-desc">${safe(customerOptionDefinition(x))}</span></label>`;
-  }).join("");
-  bindCustomerRadio();
-}
-
-
-const evaluationCriteria = [
-  {key:"benefit", label:"效益", guide:"對銷售、來客、回訪、名單蒐集或商圈接觸的幫助越明顯，分數越高。"},
-  {key:"feasibility", label:"可行性", guide:"依現有人力、流程、技能與品牌規範越容易執行，分數越高。"},
-  {key:"cost", label:"成本", guide:"所需時間、人力、物料、贈品或費用越低，分數越高。"},
-  {key:"risk", label:"風險性", guide:"對取餐、外送、食品安全、顧客體驗或品牌規範造成的風險越低，分數越高。"},
-  {key:"testability", label:"測試性", guide:"能否先用單一時段、少量名額、少量物料、單一合作點或小範圍顧客試行；越容易先小規模測試並調整，分數越高。"}
+const STEP0_Q5={id:'q5',title:'Q5｜你的店目前最想強化哪一種生意？',hint:'這題是經營目標，請單選最想強化的方向。',choices:{A:'平日午餐與上班族訂單｜午餐快取、個人餐、公司訂餐或會議餐點',B:'晚餐、週末與家庭客訂單｜家庭分享餐、晚餐大單、週末回訪或社區熟客',C:'學生與活動訂單｜學生點心、社團、班級、補習班或活動餐點',D:'現場快速外帶訂單｜過路客、即買即走、短時間購買或快速取餐',E:'假日、觀光與地方活動訂單｜假日人流、觀光客、商場活動、地方節慶或特殊活動'}};
+const CUSTOMER_GROUPS=[
+ {id:'existing',name:'既有回訪客',desc:'已經知道我們、買過我們，有機會提高回訪與客單。'},
+ {id:'opportunity',name:'商圈機會客',desc:'在商圈裡會經過、停留或有需求，但尚未穩定選擇我們。'},
+ {id:'organization',name:'組織／團體客',desc:'可以透過單位、場域或窗口接觸，具備團體購買或合作可能。'}
 ];
-const tieBreakerOrder = ["benefit","feasibility","cost","risk","testability"];
-
-function buildCandidates(){
-  const code = state.district?.code || "";
-  const subtype = subtypeFinal() || state.subtype || "";
-  const s1 = state.data.step1 || {};
-  const s2 = state.data.step2 || {};
-  const s3 = state.data.step3 || {};
-  const profile = [
-    code, subtype,
-    ...(s1.customers || []),
-    ...(s1.contexts || []),
-    ...(s1.pains || []),
-    ...(s1.value || []),
-    ...(s2.resources || []),
-    s2.note || "",
-    ...(s3.constraints || []),
-    ...(s3.impacts || []),
-    ...(s3.directions || [])
-  ].join(" ");
-
-  const has = (...words)=>words.some(w=>profile.includes(w));
-  const rows = [];
-  const add = row => {
-    if(!rows.some(r=>r[0] === row[0])) rows.push(row);
-  };
-
-  const isHospital = has("醫院","診所","陪診","陪伴家屬","醫護","就診");
-  const isCaregiver = has("陪診","陪伴家屬","陪病","家屬");
-  const isMedicalStaff = has("醫護","行政人員","醫院／診所工作圈");
-  const isFamily = has("家庭客","陪伴型家庭客","接送家庭","家庭活動","家庭旅遊");
-  const isCommunity = has("社區","住宅","在地","地方","學校／社區");
-  const isTourism = has("觀光","節慶","旅客","老街");
-  const isFastPickup = has("趕時間","快速","外帶","預購","取餐","少等待","時間不固定");
-
-  if(isHospital){
-    if(isCaregiver){
-      add(["陪診家屬快速取餐組合","回應陪診或陪伴家屬時間不穩定、需要快速取得餐點的需求","預購外帶、簡單套餐、清楚取餐提醒、外帶包裝","需避免活動規則太複雜，並注意醫院周邊動線與等待時間","預購單數／取餐等待時間／指定套餐銷售","建議優先"]);
-      add(["醫院周邊預購外帶導流","讓陪診家屬可先預訂、減少現場等待與決策時間","預購表單、外帶套餐、固定取餐時段、社群或會員通知","需確保備餐穩定、通知清楚，避免尖峰取餐混亂","預購訂單數／外帶占比／取消率","建議優先"]);
-      add(["陪伴輪替安心餐方案","回應陪伴者需要短時間用餐、替換照顧或帶回附近的情境","簡單分享餐、外帶包裝、取餐提醒、固定品項","需注意餐點保存、取餐時間與醫院周邊規範","指定套餐銷售／回訪率／客訴件數","可討論"]);
-      add(["附近藥局或停車場合作提醒","透過醫院周邊接觸點，讓陪診家屬在需要用餐時想到門店","合作點海報、優惠券、QR Code、外帶套餐資訊","需確認合作規範、張貼位置與優惠券回收流程","合作點掃碼數／優惠券回收／回店消費","可討論"]);
-    }else if(isMedicalStaff){
-      add(["醫護輪班預購取餐","回應醫護與行政人員用餐時間不固定、需要穩定快速取餐","預購表單、固定取餐時段、外帶套餐、會員提醒","需配合輪班時間與尖峰備餐，避免取餐延誤","預購單數／平均等待時間／回購率","建議優先"]);
-      add(["醫院單位團訂試吃包","降低醫院科室或行政單位團訂決策門檻","試吃包、團訂菜單、指定窗口、外送包裝","需控管食品安全、配送時間與訂單穩定性","團訂筆數／單位名單數／回購率","可討論"]);
-      add(["下班外帶晚餐組合","回應醫護或行政人員下班順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"]);
-      add(["醫院周邊取餐分流改善","回應醫院周邊尖峰取餐、外送交疊造成的等待與混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]);
-    }else{
-      add(["醫院周邊快速外帶導流","回應醫院周邊顧客時間有限、需要快速取得餐點","外帶套餐、清楚取餐提醒、預購表單","需注意尖峰取餐、醫院周邊動線與等待時間","外帶單數／平均等待時間／指定套餐銷售","建議優先"]);
-      add(["指定時段預購取餐","讓醫院周邊顧客在固定時段快速完成取餐","預購表單、固定取餐時段、簡單套餐","需確保備餐量與通知清楚","預購單數／取消率／取餐準時率","建議優先"]);
-      add(["附近熟客回訪提醒","創造醫院周邊熟客再次購買理由","會員系統、熟客提醒、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"]);
-    }
-    return rows.slice(0,5);
-  }
-
-  if(code === "COM"){
-    add(["午餐快取預約方案","回應上班族午休時間短、希望準時取餐","預購、外帶包裝、取餐動線、套餐推薦","需控管尖峰備餐與取餐分流","午餐預約單數／平均等待時間／取餐錯誤率","建議優先"]);
-    add(["企業團訂試吃包","降低辦公室或工業區團訂決策門檻","試吃包、團訂菜單、企業拜訪或周邊合作","需控管試吃成本、配送時間與訂單穩定性","團訂筆數／企業名單數／回購率","可討論"]);
-    add(["下班外帶晚餐組合","回應下班族順手解決晚餐的需求","外帶套餐、會員提醒、預購取餐","優惠規則要簡單，避免尖峰取餐混亂","晚餐外帶占比／指定套餐銷售","可討論"]);
-    add(["取餐與外送分流改善","回應尖峰取餐、外送交疊造成的混亂","取餐標示、現場引導、外送等待區規劃","需配合門店前場與人力配置","平均等待時間／客訴件數／外送延誤率","建議優先"]);
-    if(subtype.includes("商場")) add(["商場員工回訪方案","回應商場員工固定但忙碌的用餐需求","員工優惠、預購、固定時段提醒","需確認商場規範與宣傳限制","員工回訪率／預購單數","可討論"]);
-    return rows.slice(0,5);
-  }
-
-  if(code === "Sub"){
-    if(isTourism){
-      add(["觀光補給外帶組合","回應旅客快速補給、同行分食與好帶走需求","外帶包裝、多人分享餐、清楚套餐","需避免品項太複雜、影響出餐速度","觀光時段交易數／分享餐銷售","建議優先"]);
-      add(["地方活動／節慶快閃攤位","抓住地方活動或節慶人流，創造接觸與銷售","外部攤位、披薩切片、預購或回店優惠","需確認攤位規範、備貨、保溫與結帳流程","現場銷售額／優惠券回收／回店消費","可討論"]);
-    }else{
-      add(["在地熟客回訪日","強化在地熟客關係，創造再次購買理由","熟客名單、會員系統、社群或群組通知","活動規則要簡單，避免增加門店負擔","熟客回訪率／會員新增／指定套餐銷售","建議優先"]);
-      add(["社區預購外帶導流","讓交通不便或人流分散的商圈也能形成訂購","預購表單、外帶套餐、固定取餐時段","需確保取餐時間、備餐量與通知清楚","預購訂單數／外帶占比／取消率","可討論"]);
-    }
-    add(["在地合作試吃活動","讓還不常買的在地顧客開始接觸與嘗試","試吃品項、合作場域、優惠券或會員導流","需確認合作規範、食品安全與成本","試吃人次／名單數／後續訂購","可討論"]);
-    if(isCommunity || has("社群","地方")) add(["在地社群預購日","透過在地社群或地方群組，把接觸轉成預購","社群通知、預購表單、外帶套餐、固定取餐時段","需確認通知內容清楚、備餐量穩定","社群互動／預購單數／取消率","可討論"]);
-    return rows.slice(0,5);
-  }
-
-  // R1 / residential default
-  add(["社區試吃活動","降低第一次嘗試門檻，讓居民先接觸產品","試吃品項、外帶包裝、優惠券或會員導流","需控管成本、食品安全與社區規範","試吃人次／優惠券回收／會員新增","建議優先"]);
-  add(["熟客回訪活動日","創造附近熟客再次購買理由","會員系統、熟客邀請、指定套餐","參與規則要簡單，避免影響尖峰營運","熟客回訪率／指定套餐銷售","可討論"]);
-  add(["預購外帶導流","把社區接觸轉成後續訂購","預購表單、外帶套餐、社群通知","需確保取餐時間與備餐穩定","預購訂單數／外帶占比","建議優先"]);
-  if(isCommunity && !isFastPickup){
-    add(["社區市集擺攤","在社區聚集場景創造接觸與購買","披薩切片、攤位布置、現場銷售話術","需確認攤位、備貨、保溫與結帳流程","現場銷售額／回店消費／社群互動","可討論"]);
-  }
-  if(isFamily && isCommunity && !isFastPickup){
-    add(["親子社區合作挑戰","創造陪伴型家庭客的互動理由","外部場地、社區合作、分享餐","優先使用社區或外部場地，不預設店內久留","活動參與組數／回店消費","可討論"]);
-  }
-  return rows.slice(0,5);
+const PASSCODES={1:'看見顧客',2:'盤點我們',3:'看懂限制',4:'設計行動'};
+const LEVEL_SCORE={low:1,mid:3,high:5};
+const LEVEL_LABEL={low:'低',mid:'中',high:'高'};
+const state={id:localStorage.getItem('coca_session_id')||crypto.randomUUID(),completed:{0:false,1:false,2:false,3:false,priority:false,4:false},unlocked:{1:false,2:false,3:false,4:false},step0:null,step1:null,step2:null,step3:null,priority:null,step4:null,final:null};
+localStorage.setItem('coca_session_id',state.id);
+function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));}
+function arr(v){return Array.isArray(v)?v:[]}
+function textVal(id){return (document.getElementById(id)?.value||'').trim();}
+function checkedValues(name){return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value);}
+function renderStagePills(){const stages=[['0','門店校準'],['1','看見顧客'],['2','盤點我們'],['3','看懂限制'],['priority','客群優先'],['4','設計行動']];document.getElementById('stagePills').innerHTML=stages.map(([id,label])=>`<span class="stage-pill ${state.completed[id]?'done':''}">${label}</span>`).join('');}
+function renderStep0(){
+ const box=document.getElementById('step0Questions');
+ box.innerHTML=STEP0_Q.map(q=>`<div class="card"><h3>${q.title}</h3><p class="hint">${q.hint}</p><div class="grid-2"><div class="form-row"><label>最主要</label><select id="${q.id}_primary"><option value="">請選擇</option>${Object.entries(q.choices).map(([k,v])=>`<option value="${k}">${k}. ${esc(v)}</option>`).join('')}</select></div><div class="form-row"><label>明顯次要，可不選</label><select id="${q.id}_secondary"><option value="">沒有明顯次要</option>${Object.entries(q.choices).map(([k,v])=>`<option value="${k}">${k}. ${esc(v)}</option>`).join('')}</select></div></div></div>`).join('')+
+ `<div class="card"><h3>${STEP0_Q5.title}</h3><p class="hint">${STEP0_Q5.hint}</p>${Object.entries(STEP0_Q5.choices).map(([k,v])=>`<label class="choice"><input type="radio" name="q5" value="${k}"><span><strong>${k}. ${esc(v.split('｜')[0])}</strong><br><span class="small">${esc(v.split('｜')[1]||'')}</span></span></label>`).join('')}</div>`;
 }
-function toggleCandidate(i){
-  if(state.selectedCandidateIndices.includes(i)){
-    state.selectedCandidateIndices = state.selectedCandidateIndices.filter(x=>x!==i);
-  }else{
-    state.selectedCandidateIndices.push(i);
-  }
-  state.selectedCandidateIndices.sort((a,b)=>a-b);
-  resetEvaluationState();
-  renderCandidateRows();
-  $("evaluationBox")?.classList.add("hidden");
-  $("evaluationBox").innerHTML = "";
-  $("finalBox")?.classList.add("hidden");
-  $("finalBox").innerHTML = "";
-  if($("candidateConfirmMsg")){
-    $("candidateConfirmMsg").innerHTML = '<div class="hint">候選行動選擇已更新，請按下「確認候選行動，進入方案評估」。</div>';
-  }
+function calculateStep0(){
+ const scores={A:0,B:0,C:0,D:0,E:0}; const answers={};
+ for(const q of STEP0_Q){const p=textVal(q.id+'_primary');const s=textVal(q.id+'_secondary');if(!p) throw new Error(`${q.title} 尚未選擇最主要答案。`); if(s && s===p) throw new Error(`${q.title} 的次要答案不能和主要答案相同。`);answers[q.id]={primary:p,secondary:s};scores[p]+=2;if(s)scores[s]+=1;}
+ const q5=document.querySelector('input[name="q5"]:checked')?.value; if(!q5) throw new Error('Q5 尚未選擇。'); answers.q5={primary:q5};
+ const sorted=Object.entries(scores).sort((a,b)=>b[1]-a[1]); const main=sorted[0][0]; const sub=sorted[1][1]>0 ? sorted[1][0] : '';
+ let label=TYPE_MAP[main].label; if(sub) label=`${TYPE_MAP[main].short}主型、${TYPE_MAP[sub].short}副型`;
+ const q5Mismatch = q5 && q5!==main && q5!==sub;
+ return {answers,scores,mainType:main,subType:sub,typeLabel:label,q5Type:q5,q5Mismatch,completedAt:new Date().toISOString()};
 }
-function renderCandidateRows(){
-  const selected = state.selectedCandidateIndices;
-  const tableRows = state.candidates.map((r,i)=>{
-    const sel = selected.includes(i) ? " selected" : "";
-    return `<tr><td><button type="button" class="candidate-select-btn${sel}" onclick="toggleCandidate(${i})">${i+1}</button></td><td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${safe(r[2])}</td><td>${safe(r[3])}</td><td>${safe(r[4])}</td></tr>`;
-  }).join("");
-  $("candidateTableBody").innerHTML = tableRows;
-  const names = selected.map(i=>`${i+1}. ${state.candidates[i]?.[0] || ""}`).filter(Boolean).join("、") || "尚未選擇";
-  const target = $("selectedSummary");
-  if(target) target.innerHTML = `<strong>目前選定：</strong>${safe(names)}`;
-}
-
-function confirmCandidates(){
-  const selectedCount = state.selectedCandidateIndices.length;
-  const msg = $("candidateConfirmMsg");
-  if(selectedCount < 2){
-    if(msg) msg.innerHTML = `<div class="error">請至少選出 2 個候選行動，才能進入方案評估。目前已選 ${selectedCount} 個。</div>`;
-    $("evaluationBox")?.classList.add("hidden");
-    $("finalBox")?.classList.add("hidden");
-    return;
-  }
-  resetEvaluationState();
-  if(msg) msg.innerHTML = `<div class="ok">已確認 ${selectedCount} 個候選行動，請往下完成方案評估。</div>`;
-  renderEvaluation();
-  $("evaluationBox")?.scrollIntoView({behavior:"smooth", block:"start"});
-}
-
-function renderCocSheet(finalPlan){
-  const s1 = state.data.step1 || {};
-  const s2 = state.data.step2 || {};
-  const s3 = state.data.step3 || {};
-  const plan = finalPlan || state.data.selectedPlan || null;
-  const noteHtml = (s2.note || "").trim()
-    ? `<strong>補充做法／優勢／盲點</strong><div>${safe(s2.note)}</div>`
-    : "";
-  return `<div class="result coc-sheet">
-    <div class="coc-sheet-head"><div><h3>COC 商圈活動脈絡策劃表</h3><div class="hint">將前三階段 COC 診斷與最後選定行動整合成一張表，供課堂討論與後續整理使用。</div></div><img class="coc-sheet-logo" src="./assets/pizza-logo.png" alt="Pizza Hut logo"></div>
-    <table class="coc-table">
-      <tr><th style="width:120px"></th><th>消費者痛點與需求</th><th>組織既有資源與做法</th><th>條件與限制</th></tr>
-      <tr>
-        <td class="coc-rowhead">方案要素分析</td>
-        <td>
-          <strong>目標顧客</strong>${cocList(s1.customers)}
-          <strong>出現情境</strong>${cocList(s1.contexts)}
-          <strong>需求與痛點</strong>${cocList(s1.pains)}
-          <strong>可能選擇我們的理由</strong>${cocList(s1.value)}
-        </td>
-        <td>
-          <strong>既有資源</strong>${cocList(s2.resources)}
-          ${noteHtml}
-        </td>
-        <td>
-          <strong>條件與限制</strong>${cocList(s3.constraints)}
-          <strong>造成的影響</strong>${cocList(s3.impacts)}
-          <strong>相對價值或處理方向</strong>${cocList(s3.directions)}
-        </td>
-      </tr>
-      <tr><td class="coc-rowhead">方案擬定</td><td colspan="3">${plan ? `<strong>${safe(plan[0])}</strong><br>${safe(plan[1])}<br><br>運用資源與做法：${safe(plan[2])}<br>需注意限制：${safe(plan[3])}<br>觀察指標：${safe(plan[4])}` : "<div class='hint'>尚未選定方案。</div>"}</td></tr>
-    </table>
-  </div>`;
-}
-async function readCheckedScore(rowIndex, key){
-  const group = document.getElementsByName(`score_${rowIndex}_${key}`);
-  for(const el of group){
-    if(el.checked){
-      const n = Number.parseInt(String(el.value), 10);
-      return Number.isFinite(n) ? n : null;
-    }
-  }
-  return null;
-}
-function scoreInput(rowIndex, key){
-  const direct = readCheckedScore(rowIndex, key);
-  if(Number.isFinite(direct)) return direct;
-
-  const v = state.evalScores?.[rowIndex]?.[key];
-  const n = Number.parseInt(String(v), 10);
-  return Number.isFinite(n) ? n : null;
-}
-function setScore(rowIndex, key, value){
-  if(!state.evalScores) state.evalScores = {};
-  if(!state.evalScores[rowIndex]) state.evalScores[rowIndex] = {};
-  const n = Number.parseInt(String(value), 10);
-  state.evalScores[rowIndex][key] = Number.isFinite(n) ? n : null;
-  updateEvaluationResult();
-}
-function bindScoreInputs(){
-  if(window.__cocScoreBound === true) return;
-  window.__cocScoreBound = true;
-  document.addEventListener("change", (event)=>{
-    const input = event.target;
-    if(!input || input.tagName !== "INPUT") return;
-    if(!String(input.name || "").startsWith("score_")) return;
-    const parts = String(input.name).split("_");
-    const row = Number.parseInt(parts[1], 10);
-    const key = parts[2];
-    if(Number.isFinite(row) && key){
-      setScore(row, key, input.value);
-    }else{
-      updateEvaluationResult();
-    }
-  });
-}
-function getEvaluationScores(){
-  const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
-  return selected.map((plan, idx)=>{
-    const scores = {};
-    evaluationCriteria.forEach(c=>{
-      const n = scoreInput(idx, c.key);
-      scores[c.key] = Number.isFinite(n) ? n : null;
-    });
-    const complete = evaluationCriteria.every(c=>Number.isFinite(scores[c.key]));
-    const total = complete ? evaluationCriteria.reduce((sum,c)=>sum + Number(scores[c.key]), 0) : null;
-    return {plan, idx, originalIndex: state.selectedCandidateIndices[idx], scores, complete, total};
-  });
-}
-function decideWinner(evals){
-  const complete = evals.filter(e=>e.complete);
-  if(complete.length === 0) return {winner:null, exactTie:[]};
-  const sorted = [...complete].sort((a,b)=>{
-    if(b.total !== a.total) return b.total - a.total;
-    for(const key of tieBreakerOrder){
-      if(b.scores[key] !== a.scores[key]) return b.scores[key] - a.scores[key];
-    }
-    return 0;
-  });
-  const top = sorted[0];
-  const exactTie = sorted.filter(e =>
-    e.total === top.total &&
-    tieBreakerOrder.every(key => e.scores[key] === top.scores[key])
-  );
-  return {winner: exactTie.length === 1 ? top : null, exactTie};
-}
-function renderEvaluation(){
-  const selectedCount = state.selectedCandidateIndices.length;
-  if(selectedCount < 2){
-    $("evaluationBox").classList.remove("hidden");
-    $("evaluationBox").innerHTML = `<div class="error">請先在候選行動表格中選出至少 2 個候選行動進入評估。目前已選 ${selectedCount} 個。</div>`;
-    $("finalBox").classList.add("hidden");
-    return;
-  }
-
-  const selected = state.selectedCandidateIndices.map(i=>state.candidates[i]).filter(Boolean);
-  const criteriaGuide = `<div class="definition"><strong>評分說明：</strong>請針對每個候選方案，以 1／3／5 分進行評估。分數越高，代表該方案在該構面越有利：效益看「幫助是否明顯」、可行性看「是否容易執行」、成本看「所需投入是否較低」、風險性看「是否不容易造成問題」、測試性看「能否先用單一時段、少量名額、少量物料、單一合作點或小範圍顧客試行」。系統會先比較總分，總分最高者為建議選定方案。若總分相同，則依序比較：效益 → 可行性 → 成本 → 風險性 → 測試性。若所有分數皆相同，才由使用者自行選定一個方案。</div>
-  <table><tr><th>評估構面</th><th>5 分</th><th>3 分</th><th>1 分</th></tr>
-    <tr><td>效益</td><td>對銷售、來客、回訪、名單蒐集或商圈接觸的幫助明顯</td><td>可能有幫助，但效果需要觀察</td><td>幫助有限，或很難看出具體成效</td></tr>
-    <tr><td>可行性</td><td>依現有人力、流程、技能與品牌規範，可以直接執行</td><td>可以執行，但需要先協調或調整</td><td>執行困難，需要大量額外資源或跨部門支持</td></tr>
-    <tr><td>成本</td><td>成本低，主要使用現有資源即可完成</td><td>成本中等，需要部分時間、人力、物料、贈品或費用</td><td>成本高，需要較多時間、人力、物料、贈品或費用</td></tr>
-    <tr><td>風險性</td><td>風險低，不太影響取餐、外送、食品安全、品牌規範或顧客體驗</td><td>有部分風險，但可透過規劃降低</td><td>風險高，可能造成動線混亂、客訴、食品安全、執行負擔或規範問題</td></tr>
-    <tr><td>測試性</td><td>可用單一時段、少量名額、少量物料、單一合作點或小範圍顧客快速試行，且容易觀察與調整</td><td>可以測試，但需要較多準備或觀察時間</td><td>不容易小規模測試，一旦執行就較難調整</td></tr>
-  </table>`;
-
-  const rows = selected.map((plan, i)=>{
-    const scoreCells = evaluationCriteria.map(c => `<td class="score-cell">
-      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="5"> 5</label>
-      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="3"> 3</label>
-      <label><input class="score-radio" type="radio" name="score_${i}_${c.key}" data-row="${i}" data-key="${c.key}" value="1"> 1</label>
-      <div class="score-guide">${safe(c.guide)}</div>
-    </td>`).join("");
-    return `<tr><td>${safe(plan[0])}</td>${scoreCells}<td class="total-cell" id="total_${i}">尚未完成</td><td class="winner-cell" id="selected_${i}"></td></tr>`;
-  }).join("");
-
-  $("evaluationBox").classList.remove("hidden");
-  $("evaluationBox").innerHTML = `<div class="result">
-    <h3>方案評估表</h3>
-    ${criteriaGuide}
-    <table class="eval-table">
-      <colgroup>
-        <col class="candidate-col">
-        <col class="criterion-col"><col class="criterion-col"><col class="criterion-col"><col class="criterion-col"><col class="criterion-col">
-        <col class="total-col"><col class="winner-col">
-      </colgroup>
-      <tr><th>候選方案</th>${evaluationCriteria.map(c=>`<th>${c.label}</th>`).join("")}<th>總分</th><th>方案選定</th></tr>
-      ${rows}
-    </table>
-    <div id="tieBox"></div>
-  </div>`;
-  $("finalBox").classList.remove("hidden");
-  $("finalBox").innerHTML = `<h3>整理成 COC 表與 Action Design</h3><div class="actions"><button type="button" onclick="updateEvaluationResult()">重新計算分數</button><button class="primary" type="button" id="makeFinal">整理成 Action Design</button></div><div id="finalResult"></div>`;
-  bindScoreInputs();
-  $("makeFinal")?.addEventListener("click", ()=>makeFinal());
-  updateEvaluationResult();
-}
-function updateEvaluationResult(){
-  const evals = getEvaluationScores();
-  evals.forEach(e=>{
-    const totalEl = $("total_"+e.idx);
-    const selectedEl = $("selected_"+e.idx);
-    if(totalEl) totalEl.textContent = e.complete ? String(e.total) : "尚未完成";
-    if(selectedEl) selectedEl.innerHTML = "";
-  });
-
-  const completeAll = evals.length > 0 && evals.every(e=>e.complete);
-  if(!completeAll){
-    const tie = $("tieBox");
-    if(tie) tie.innerHTML = `<div class="hint">請完成所有候選方案的五項評分，系統才會自動選定方案。</div>`;
-    state.data.evaluation = evals;
-    state.data.selectedPlan = null;
-    return;
-  }
-
-  const decision = decideWinner(evals);
-  state.data.evaluation = evals;
-
-  if(decision.winner){
-    const el = $("selected_"+decision.winner.idx);
-    if(el) el.innerHTML = `<strong>◎ 當選</strong>`;
-    state.data.selectedPlan = decision.winner.plan;
-    const tie = $("tieBox");
-    if(tie) tie.innerHTML = `<div class="ok">系統已依「總分 → 效益 → 可行性 → 成本 → 風險性 → 測試性」選定方案：${safe(decision.winner.plan[0])}</div>`;
-  }else{
-    state.data.selectedPlan = null;
-    const tieOptions = decision.exactTie.map(e=>`<button type="button" class="candidate-select-btn" onclick="manualSelectWinner(${e.idx})">${safe(e.plan[0])}</button>`).join(" ");
-    const tie = $("tieBox");
-    if(tie) tie.innerHTML = `<div class="gate"><h3>同分方案需人工選定</h3><p>目前有兩個以上方案在總分與各項指標上完全相同，系統無法依排序規則自動分出優先順序。請從同分方案中選出一個優先執行方案。</p>${tieOptions}</div>`;
-  }
-}
-function manualSelectWinner(idx){
-  const evals = getEvaluationScores();
-  const selected = evals.find(e=>e.idx === idx);
-  if(!selected || !selected.complete) return;
-  evals.forEach(e=>{
-    const el = $("selected_"+e.idx);
-    if(el) el.innerHTML = "";
-  });
-  const el = $("selected_"+idx);
-  if(el) el.innerHTML = `<strong>◎ 當選</strong>`;
-  state.data.evaluation = evals;
-  state.data.selectedPlan = selected.plan;
-  const tie = $("tieBox");
-  if(tie) tie.innerHTML = `<div class="ok">已由使用者選定方案：${safe(selected.plan[0])}</div>`;
-}
-async function makeFinal(){
-  updateEvaluationResult();
-  const evals = getEvaluationScores();
-  if(state.selectedCandidateIndices.length < 2){
-    $("finalResult").innerHTML = `<div class="error">請先選出至少 2 個候選行動進入方案評估。</div>`;
-    return;
-  }
-  if(!evals.every(e=>e.complete)){
-    const missing = evals
-      .filter(e=>!e.complete)
-      .map(e=>safe(e.plan[0]))
-      .join("、");
-    $("finalResult").innerHTML = `<div class="error">請先完成所有候選方案的五項評分。尚未完成：${missing || "部分候選方案"}</div>`;
-    return;
-  }
-  if(!state.data.selectedPlan){
-    updateEvaluationResult();
-  }
-  if(!state.data.selectedPlan){
-    $("finalResult").innerHTML = `<div class="error">目前有完全同分方案，請先從同分方案中人工選定一個優先執行方案。</div>`;
-    return;
-  }
-  const plan = state.data.selectedPlan;
-  state.done[4] = true;
-  state.data.final = plan;
-  await saveProgress(4);
-  const cocSheet = renderCocSheet(plan);
-  const actionTable = `<div class="result"><h3>Action Design｜下一步行動</h3>
-    <table><tr><th>行動方向</th><th>具體做法</th><th>回應需求與痛點</th><th>運用資源與做法</th><th>條件與限制</th><th>觀察指標</th></tr>
-    <tr><td>${safe(plan[0])}</td><td>先小規模試行，確認人力、動線、規則與成本可控後再放大。</td><td>${safe(plan[1])}</td><td>${safe(plan[2])}</td><td>${safe(plan[3])}</td><td>${safe(plan[4])}</td></tr>
-    </table></div>`;
-  const exportBox = `<div class="export-actions no-print"><button class="primary" type="button" onclick="window.print()">匯出／列印 PDF</button><span class="hint">點選後請在列印視窗選擇「另存為 PDF」。</span></div>
-  <div class="gate"><h3>第四階段已完成</h3><p>已正式送出後台。請人工檢查這個行動是否符合品牌規範、門市人力、取餐與外送動線，以及實際可行性。後續請等待講師指示。</p></div>`;
-  $("finalResult").innerHTML = cocSheet + actionTable + exportBox;
-}
-
-document.querySelectorAll(".district").forEach(card=>{
-  card.addEventListener("click", ()=>{
-    document.querySelectorAll(".district").forEach(c=>c.classList.remove("selected"));
-    card.classList.add("selected");
-    state.district = {code:card.dataset.code, name:card.dataset.name};
-    state.subtype = null;
-    renderSubtypes();
-    renderCurrentDistrict();
-  });
-});
-
-$("saveStep0")?.addEventListener("click", ()=>{
-  const err = validateStep0();
-  if(err){
-    $("save0Msg").innerHTML = `<div class="error">${safe(err)}</div>`;
-    return;
-  }
-  ensureSubmissionId();
-  $("save0Msg").innerHTML = `<div class="result"><h3>Step 0｜小組資料確認</h3>
-    <table>
-      <tr><th>項目</th><th>內容</th></tr>
-      <tr><td>組別</td><td>${safe($("groupName")?.value || "")}</td></tr>
-      <tr><td>門店名稱</td><td>${safe($("storeName")?.value || "未填寫")}</td></tr>
-      <tr><td>第一層商圈類別</td><td>${safe(state.district?.code || "")}｜${safe(state.district?.name || "")}</td></tr>
-      <tr><td>第二層細分情境</td><td>${safe(subtypeFinal())}</td></tr>
-    </table>
-    <div class="gate"><h3>Step 0 已完成</h3><p>請確認以上資料是否正確。後續請等待講師指示。</p></div>
-  </div>`;
-});
-$("makePersona")?.addEventListener("click", async ()=>{
-  if(!validateOther("customers") || !validateOther("contexts") || !validateOther("pains") || !validateOther("value")){
-    $("personaResult").innerHTML = '<div class="error">你已勾選「其他」，請補充具體內容。</div>';
-    return;
-  }
-  const customers = checked("customers"), contexts = checked("contexts"), pains = checked("pains"), value = checked("value");
-  if(!state.district || !state.subtype || customers.length===0 || contexts.length===0 || pains.length===0 || value.length===0){
-    $("personaResult").innerHTML = '<div class="error">請完成主要顧客、出現情境、需求痛點與可能選擇我們的理由。</div>';
-    return;
-  }
-  state.done[1] = true;
-  state.data.step1 = {customers, contexts, pains, value};
-  $("personaResult").innerHTML = `<div class="result"><h3>AI 產出：目標客群情境</h3>
-    <table><tr><th>目標客群名稱</th><th>這群顧客是誰</th><th>何時出現／被接觸</th><th>主要需求或痛點</th><th>可能選擇我們的理由</th></tr>
-    <tr><td>${safe(customers[0])}主軸</td><td>${safe(state.district.code)}｜${safe(subtypeFinal())}中的${safe(customers[0])}</td><td>${safe(contexts.join("、"))}</td><td>${safe(pains.join("、"))}</td><td>${safe(value.join("、"))}</td></tr>
-    </table>${completionGate(1,2)}</div>`;
-  renderStages();
-  bindUnlocks();
-});
-$("makeResources")?.addEventListener("click", async ()=>{
-  const resources = checked("resources"), note = $("resourceNote").value.trim();
-  if(resources.length===0 && !note){
-    $("resourcesResult").innerHTML = '<div class="error">請至少選擇一項既有資源，或補充做法／優勢／盲點。</div>';
-    return;
-  }
-  state.done[2] = true;
-  state.data.step2 = {resources, note};
-  const noteRow = note ? `<tr><td>補充內容</td><td>${safe(note)}</td><td>需對照第一階段目標客群</td><td>避免只是照總部活動執行，需依商圈微調</td></tr>` : "";
-  $("resourcesResult").innerHTML = `<div class="result"><h3>AI 整理：資源與做法</h3>
-    <table><tr><th>類別</th><th>使用者選定內容</th><th>是否對上目標客群需求</th><th>可放大或需調整之處</th></tr>
-    <tr><td>既有資源</td><td>${tags(resources)}</td><td>可協助降低嘗試門檻、強化外帶或回訪</td><td>優先挑選店長可控、成本可控、可快速試行的資源</td></tr>${noteRow}
-    </table>${completionGate(2,3)}</div>`;
-  renderStages();
-  bindUnlocks();
-});
-$("makeConstraints")?.addEventListener("click", async ()=>{
-  if(!validateOther("constraints") || !validateOther("impacts") || !validateOther("directions")){
-    $("constraintsResult").innerHTML = '<div class="error">你已勾選「其他」，請補充具體內容。</div>';
-    return;
-  }
-  const c = checked("constraints"), impacts = checked("impacts"), d = checked("directions");
-  if(c.length===0 || impacts.length===0 || d.length===0){
-    $("constraintsResult").innerHTML = '<div class="error">請完成條件與限制、造成的影響，以及相對價值或處理方向。</div>';
-    return;
-  }
-  state.done[3] = true;
-  state.data.step3 = {constraints:c, impacts, directions:d};
-  $("constraintsResult").innerHTML = `<div class="result"><h3>AI 整理：商圈條件與限制</h3>
-    <table><tr><th>條件與限制</th><th>對顧客或活動造成的影響</th><th>相對價值或處理方向</th><th>風險提醒</th></tr>
-    <tr><td>${tags(c)}</td><td>${tags(impacts)}</td><td>${tags(d)}</td><td>不要硬把限制說成優勢；若無法形成相對價值，就改用降低影響、改善流程或避開限制的方式處理。</td></tr>
-    </table>${completionGate(3,4)}</div>`;
-  renderStages();
-  bindUnlocks();
-});
-function makeCandidates(){
-  state.candidates = buildCandidates();
-  state.selectedCandidateIndices = [];
-  state.done[4] = false;
-  state.data.step4 = {candidates:state.candidates};
-  resetEvaluationState();
-  $("candidateResult").innerHTML = `<div class="result"><h3>AI 產出：候選行動方向</h3>
-    <table><tr><th>編號</th><th>候選行動方向</th><th>回應的需求</th><th>運用資源與做法</th><th>需注意限制</th><th>觀察指標</th></tr>
-    <tbody id="candidateTableBody"></tbody>
-    </table><p class="hint">請選出至少 2 個想採用或發展的候選行動，進入方案評估。所有被選定的候選行動，都會進入下一步評估。</p>
-    <div id="selectedSummary" class="selected-summary">尚未選擇</div>
-    <div class="actions"><button class="primary" type="button" onclick="confirmCandidates()">確認候選行動，進入方案評估</button></div>
-    <div id="candidateConfirmMsg"></div>
-  </div>`;
-  $("evaluationBox").classList.add("hidden");
-  $("evaluationBox").innerHTML = "";
-  $("finalBox").classList.add("hidden");
-  $("finalBox").innerHTML = "";
-  renderCandidateRows();
-  renderStages();
-}
-
-bindScoreInputs();
-bindScoreInputs();
-bindUnlocks();
-renderStages();
-bindOtherInputs();
+function completeStep0(){try{state.step0=calculateStep0();state.completed[0]=true;state.unlocked[1]=true;state.group_name=textVal('groupName');state.store_name=textVal('storeName');if(!state.group_name||!state.store_name) throw new Error('請填寫組別與門店名稱。');renderStep0Result();document.getElementById('step1').classList.remove('hidden');renderStep1();renderStagePills();location.hash='step1';}catch(e){alert(e.message)}}
+function renderStep0Result(){const r=state.step0;const rows=Object.entries(r.scores).map(([k,v])=>`<tr><td>${TYPE_MAP[k].label}</td><td>${v}</td></tr>`).join('');document.getElementById('step0Result').className='notice green';document.getElementById('step0Result').innerHTML=`<strong>系統初步判斷：</strong>${esc(r.typeLabel)}<br><span class="small">主要原因來自 Q1～Q4 的環境、時段、訂單型態與接觸對象。Q5 作為後續 Action Design 的經營目標校準。</span>${r.q5Mismatch?`<div class="notice red" style="margin-top:10px"><strong>校準提醒：</strong>你目前最想強化的是「${TYPE_MAP[r.q5Type].label}」相關生意，但門店現況較偏「${TYPE_MAP[r.mainType].label}${r.subType?'／'+TYPE_MAP[r.subType].label:''}」。請確認是否有特殊客流或明確開發理由。</div>`:''}<table><thead><tr><th>類型</th><th>分數</th></tr></thead><tbody>${rows}</tbody></table>`;}
+function renderStep1(){const main=state.step0?TYPE_MAP[state.step0.mainType].short:'門店';const sub=state.step0?.subType?TYPE_MAP[state.step0.subType].short:'';document.getElementById('step1Cards').innerHTML=CUSTOMER_GROUPS.map(g=>`<div class="card"><h3>${g.name}</h3><p class="hint">${g.desc}</p><div class="form-row"><label>通常在什麼情境出現？</label><textarea id="c_${g.id}_context" placeholder="例如：${main}${sub?'／'+sub:''}情境下，這類顧客通常在什麼時段或場景出現？"></textarea></div><div class="form-row"><label>主要需求或痛點</label><textarea id="c_${g.id}_pain" placeholder="例如：想快速取餐、需要多人分享、重視方便、價格敏感、需要準時大量供餐等。"></textarea></div><div class="form-row"><label>為什麼可能選擇我們？</label><textarea id="c_${g.id}_value" placeholder="例如：品牌熟悉、可預購、適合分享、外帶外送方便、容易決策等。"></textarea></div></div>`).join('');}
+function completeStep1(){const groups={};for(const g of CUSTOMER_GROUPS){groups[g.id]={name:g.name,context:textVal(`c_${g.id}_context`),pain:textVal(`c_${g.id}_pain`),value:textVal(`c_${g.id}_value`)};if(!groups[g.id].context||!groups[g.id].pain||!groups[g.id].value){alert(`請完成「${g.name}」的三個欄位。`);return;}}state.step1={groups};state.completed[1]=true;document.getElementById('unlock2').classList.remove('hidden');renderStagePills();location.hash='unlock2';}
+function unlockStep(n){const input=textVal('code'+n);if(input!==PASSCODES[n]){alert('口令不正確，請等待講師公布。');return;}state.unlocked[n]=true;document.getElementById('unlock'+n)?.classList.add('hidden');document.getElementById('step'+n).classList.remove('hidden');if(n===2)renderStep2();if(n===3)renderStep3();if(n===4)renderStep4();renderStagePills();location.hash='step'+n;}
+const O_LAYERS=[
+ {id:'personal',title:'店總經理個人',items:['擅長主動拜訪或外部開發','熟悉社區或地方關係','擅長流程管理與出餐效率','擅長帶動門店氣氛或活動','重視業績成長','希望提升回訪／團訂／新客開發']},
+ {id:'store',title:'門店條件',items:['店外或取餐區可短暫運用','尖峰時段人力壓力高','有外帶／預購／外送能力','有固定熟客或回訪顧客','可與鄰近分店支援或分流','目前動線不適合複雜活動']},
+ {id:'hq',title:'總部資源與支援',items:['品牌知名度','現有行銷活動','會員或優惠券工具','分享型套餐／個人餐產品組合','社群或門店宣傳素材','預購／團訂／外送平台機制']},
+ {id:'trade',title:'商圈可用條件',items:['附近有公司或辦公室窗口','附近有社區／管委會／住戶群','附近有學校／補習班／學生族群','附近有車站／商場／過路人流','附近有觀光／夜市／地方活動','有可合作的鄰近商家或場域']}
+];
+function renderCheckGroup(containerId,name,items){document.getElementById(containerId).innerHTML=items.map((x,i)=>`<label class="choice"><input type="checkbox" name="${name}" value="${esc(x)}"><span>${esc(x)}</span></label>`).join('');}
+function renderStep2(){document.getElementById('step2Cards').innerHTML=O_LAYERS.map(l=>`<div class="card"><h3>${l.title}</h3><div id="o_${l.id}_choices"></div><div class="form-row"><label>補充說明</label><textarea id="o_${l.id}_note" placeholder="請補充本店最關鍵、最可動用或最需要注意的條件。"></textarea></div></div>`).join('');O_LAYERS.forEach(l=>renderCheckGroup(`o_${l.id}_choices`,`o_${l.id}`,l.items));}
+function completeStep2(){const layers={};for(const l of O_LAYERS){layers[l.id]={title:l.title,items:checkedValues(`o_${l.id}`),note:textVal(`o_${l.id}_note`)};}state.step2={layers};state.completed[2]=true;document.getElementById('unlock3').classList.remove('hidden');renderStagePills();location.hash='unlock3';}
+const CONSTRAINTS=['人力有限','空間有限或無內用座位','尖峰時段不能增加複雜作業','顧客接觸時間短','外送或配送距離／時效壓力','活動預算或物料有限','品牌規範或食品安全限制','缺乏外部合作窗口','競爭店多，顧客選擇多','活動規則不能太複雜'];
+const IMPACTS=['顧客不容易自然想到我們','顧客不方便到店或取餐','活動要設計在店外、取餐前後或外部場域','顧客接觸時間短，不容易理解複雜活動','需要靠社區、商場、學校、公司或地方合作接觸顧客','需要用預購、團訂或小規模名額降低執行壓力'];
+function renderStep3(){renderCheckGroup('constraintChoices','constraints',CONSTRAINTS);renderCheckGroup('impactChoices','impacts',IMPACTS);renderPriorityTable();}
+function completeStep3(){state.step3={constraints:checkedValues('constraints'),impacts:checkedValues('impacts'),directions:textVal('directionNote')};state.completed[3]=true;document.getElementById('priority').classList.remove('hidden');renderStagePills();location.hash='priority';}
+function renderPriorityTable(){const metrics=[['performance','績效貢獻度','40%'],['clarity','需求明確度','15%'],['access','我們可接觸性','15%'],['resource','資源適配度','15%'],['constraint','限制可控性','15%']];document.getElementById('priorityTable').innerHTML=`<table class="priority-table"><thead><tr><th>客群</th>${metrics.map(m=>`<th>${m[1]}<br><span class="small" style="color:#fff">${m[2]}</span></th>`).join('')}<th>加權分數</th><th>初步判斷</th></tr></thead><tbody>${CUSTOMER_GROUPS.map(g=>`<tr data-group="${g.id}"><td><strong>${g.name}</strong></td>${metrics.map(m=>`<td><select data-metric="${m[0]}" data-group="${g.id}" onchange="calcPriority()"><option value="">請選</option><option value="low">低</option><option value="mid">中</option><option value="high">高</option></select></td>`).join('')}<td class="score" id="p_score_${g.id}">-</td><td id="p_rec_${g.id}">-</td></tr>`).join('')}</tbody></table>`;}
+function calcPriority(){const weights={performance:.4,clarity:.15,access:.15,resource:.15,constraint:.15};const result={};for(const g of CUSTOMER_GROUPS){let ok=true,total=0,levels={};for(const m of Object.keys(weights)){const v=document.querySelector(`select[data-group="${g.id}"][data-metric="${m}"]`)?.value;if(!v){ok=false;break;}levels[m]=v;total+=LEVEL_SCORE[v]*weights[m];}let rec='-';if(ok){if(levels.performance==='low')rec='暫緩';else if(levels.performance==='high'&&(levels.access==='low'||levels.resource==='low'))rec='需開發';else if(total>=4.2)rec='優先';else if(total>=3.2)rec='可測試';else rec='需開發／暫緩';document.getElementById('p_score_'+g.id).textContent=total.toFixed(2);document.getElementById('p_rec_'+g.id).textContent=rec;result[g.id]={name:g.name,levels,total:Number(total.toFixed(2)),recommendation:rec};}else{document.getElementById('p_score_'+g.id).textContent='-';document.getElementById('p_rec_'+g.id).textContent='-';}}return result;}
+function completePriority(){const result=calcPriority();if(Object.keys(result).length<3){alert('請完成三類客群的低／中／高判斷。');return;}const sorted=Object.values(result).sort((a,b)=>b.total-a.total);state.priority={weights:{performance:.4,clarity:.15,access:.15,resource:.15,constraint:.15},groups:result,sorted};state.completed.priority=true;document.getElementById('priorityResult').className='notice green';document.getElementById('priorityResult').innerHTML=`<strong>客群優先判斷完成。</strong><br>目前分數最高：${esc(sorted[0].name)}（${sorted[0].total.toFixed(2)}，${sorted[0].recommendation}）。系統會在 Action Design 時優先參考這個判斷，但仍會同時檢查 Q5 經營目標與 COC 內容。`;document.getElementById('unlock4').classList.remove('hidden');renderStagePills();location.hash='unlock4';}
+function renderStep4(){renderStagePills();}
+function buildPayload(){return {group_name:state.group_name,store_name:state.store_name,step0:state.step0,step1:state.step1,step2:state.step2,step3:state.step3,priority:state.priority};}
+async function generateActions(){if(!state.priority){alert('請先完成客群優先判斷。');return;}const btn=document.getElementById('genBtn');btn.disabled=true;btn.innerHTML='<span class="loading"></span>產生中';document.getElementById('aiNotice').innerHTML='';try{const payload=buildPayload();const cacheKey='coca_actions_'+btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).slice(0,120);let cached=localStorage.getItem(cacheKey);let data;if(cached){data=JSON.parse(cached);document.getElementById('aiNotice').innerHTML='<div class="notice blue">COC 內容未變，已沿用上一次產生的候選方案，未重新呼叫 AI。</div>';}else{const resp=await fetch('/api/generate-actions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});data=await resp.json();if(!data.ok)throw new Error(data.error||'候選方案產生失敗');localStorage.setItem(cacheKey,JSON.stringify(data));if(data.source==='fallback')document.getElementById('aiNotice').innerHTML='<div class="notice blue">目前未連線 AI API，系統先依規則產生暫用候選方案。正式課程若要使用 AI 整合生成，請在 Cloudflare 設定 OPENAI_API_KEY。</div>';else document.getElementById('aiNotice').innerHTML='<div class="notice green">已由 AI 根據本組 COC 內容產生候選方案。</div>';}
+state.step4={candidates:data.candidates||[],source:data.source||'ai'};renderCandidates();}catch(e){alert(e.message)}finally{btn.disabled=false;btn.innerHTML='重新產生候選行動方案';}}
+function renderCandidates(){const c=state.step4.candidates||[];document.getElementById('candidateArea').innerHTML=`<h3>候選行動方案</h3><table><thead><tr><th>主要服務客群</th><th>方案名稱</th><th>COC 整合理由</th><th>回應需求</th><th>運用條件</th><th>注意限制</th><th>測試方式</th><th>觀察指標</th></tr></thead><tbody>${c.map(x=>`<tr><td>${esc(x.customer)}</td><td><strong>${esc(x.name)}</strong></td><td>${esc(x.reason)}</td><td>${esc(x.need)}</td><td>${esc(x.resource)}</td><td>${esc(x.constraint)}</td><td>${esc(x.test)}</td><td>${esc(x.metric)}</td></tr>`).join('')}</tbody></table><div class="btns"><button onclick="renderEvaluation()">進入方案評估</button></div>`;}
+function renderEvaluation(){const c=state.step4.candidates||[];const metrics=['效益','可行性','成本','風險性','測試性'];document.getElementById('evaluationArea').classList.remove('hidden');document.getElementById('evaluationArea').innerHTML=`<h3>方案評估表</h3><p class="hint">請用 1／3／5 評估每個候選方案。效益越高分越高；成本與風險性則是成本越低、風險越低分數越高。</p><table class="eval"><thead><tr><th>方案</th>${metrics.map(m=>`<th>${m}</th>`).join('')}<th>總分</th><th>排序</th></tr></thead><tbody>${c.map((x,i)=>`<tr><td><strong>${esc(x.name)}</strong></td>${metrics.map((m,j)=>`<td><select data-eval="${i}_${j}" onchange="calcEval()"><option value="">-</option><option value="1">1</option><option value="3">3</option><option value="5">5</option></select></td>`).join('')}<td class="score" id="eval_total_${i}">-</td><td id="eval_rank_${i}">-</td></tr>`).join('')}</tbody></table><div class="btns"><button onclick="completeFinal()">整理成 Action Design 並送出後台</button></div>`;location.hash='evaluationArea';}
+function calcEval(){const c=state.step4.candidates||[];const rows=[];for(let i=0;i<c.length;i++){let scores=[];let ok=true;for(let j=0;j<5;j++){const v=document.querySelector(`select[data-eval="${i}_${j}"]`)?.value;if(!v){ok=false;break;}scores.push(Number(v));}if(ok){const total=scores.reduce((a,b)=>a+b,0);rows.push({i,total,scores});document.getElementById('eval_total_'+i).textContent=total;}else{document.getElementById('eval_total_'+i).textContent='-';document.getElementById('eval_rank_'+i).textContent='-';}}
+ rows.sort((a,b)=> b.total-a.total || b.scores[0]-a.scores[0] || b.scores[1]-a.scores[1] || b.scores[2]-a.scores[2] || b.scores[3]-a.scores[3] || b.scores[4]-a.scores[4]); rows.forEach((r,idx)=>document.getElementById('eval_rank_'+r.i).textContent=idx===0?'◎ 當選':String(idx+1));return rows;}
+async function completeFinal(){const rows=calcEval();if(rows.length<(state.step4.candidates||[]).length){alert('請完成所有候選方案的評分。');return;}const winner=rows[0];state.step4.evaluation=rows.map(r=>({index:r.i,total:r.total,scores:{benefit:r.scores[0],feasibility:r.scores[1],cost:r.scores[2],risk:r.scores[3],testability:r.scores[4]},candidate:state.step4.candidates[r.i]}));state.final={candidate:state.step4.candidates[winner.i],total:winner.total,scores:state.step4.evaluation.find(x=>x.index===winner.i).scores};state.completed[4]=true;renderFinal();await saveSubmission();renderStagePills();}
+function renderFinal(){const f=state.final.candidate;document.getElementById('finalArea').classList.remove('hidden');document.getElementById('finalArea').innerHTML=`<div class="notice green"><strong>Action Design 已完成。</strong> 已選定：${esc(f.name)}（總分 ${state.final.total}）。資料已準備送入講師後台。</div><h3>最終 Action Design</h3><table><tbody><tr><th>主要服務客群</th><td>${esc(f.customer)}</td></tr><tr><th>行動方案</th><td><strong>${esc(f.name)}</strong></td></tr><tr><th>COC 整合理由</th><td>${esc(f.reason)}</td></tr><tr><th>回應需求</th><td>${esc(f.need)}</td></tr><tr><th>運用條件</th><td>${esc(f.resource)}</td></tr><tr><th>注意限制</th><td>${esc(f.constraint)}</td></tr><tr><th>測試方式</th><td>${esc(f.test)}</td></tr><tr><th>觀察指標</th><td>${esc(f.metric)}</td></tr></tbody></table>`;}
+async function saveSubmission(){const body={id:state.id,group_name:state.group_name,store_name:state.store_name,district_type:state.step0?.typeLabel||'',district_subtype:state.step0?.subType?TYPE_MAP[state.step0.subType].label:'',current_stage:4,stage_status:JSON.stringify({1:true,2:true,3:true,4:true}),data:JSON.stringify(state)};try{const resp=await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await resp.json();if(!j.ok)throw new Error(j.error||'後台儲存失敗');}catch(e){const all=JSON.parse(localStorage.getItem('coc_submissions')||'[]');all.push({...body,updated_at:new Date().toISOString()});localStorage.setItem('coc_submissions',JSON.stringify(all));document.getElementById('finalArea').insertAdjacentHTML('beforeend',`<div class="notice blue">後台資料庫未連線，已先存入本機測試資料。</div>`);}}
+renderStep0();renderStagePills();
 </script>
-
 </body>
 </html>
