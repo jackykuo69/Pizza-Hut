@@ -10,7 +10,7 @@
 - index.html
 - schema.sql
 - README_部署說明.md
-- CHANGELOG_V32.md
+- CHANGELOG_V33.md
 
 ## Cloudflare 設定
 D1 binding 維持：
@@ -32,3 +32,14 @@ D1 binding 維持：
 - Step 4：設計行動
 
 前台不會明示通關碼。
+
+
+## V33 API 設定補充
+Step 4 候選方案使用 `/api/generate-actions`。
+
+Cloudflare Pages 環境變數：
+- `OPENAI_API_KEY`：必填，未設定時不會產生 AI 候選方案。
+- `OPENAI_MODEL`：可選，未填則使用程式預設值。
+- `ALLOW_RULE_FALLBACK`：可選；若設為 `true`，API 失敗時會回傳臨時備援方案，但正式課堂建議不要開啟，以避免誤用罐頭方案。
+
+部署後可開啟 `/api/action-health` 檢查 API Key 是否已設定。

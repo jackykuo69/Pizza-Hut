@@ -13,6 +13,16 @@ section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:
 label.choice{display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;margin:6px 0;cursor:pointer;align-items:flex-start;background:#fff;line-height:1.5}label.choice:hover{background:#fbfff8;border-color:#b7dba8}label.choice input{margin-top:4px}input[type=text],input[type=password],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:#fff}textarea{min-height:80px;line-height:1.6}.row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;margin:10px 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}button{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:11px 14px;font-weight:900;cursor:pointer;font-size:15px}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:not-allowed}.gate{background:#f8fafc;border:1px dashed #94a3b8;border-radius:14px;padding:16px;margin-top:12px}.gate-row{display:grid;grid-template-columns:1fr auto;gap:10px;max-width:520px}.error{color:var(--danger);font-weight:800;margin-top:8px}.success{color:var(--good);font-weight:900}.hidden{display:none!important}
 table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{background:var(--brand);color:#fff;text-align:left;padding:10px;border:1px solid #c8161d;white-space:nowrap}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fff8f8}.table-wrap{overflow-x:auto}.score-select{min-width:92px}
 .result-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:16px;margin-top:14px}.result-box h3{margin-top:0}.warning-box{background:#fff8e6;border:1px solid #fedf89;border-radius:14px;padding:14px;margin-top:12px;color:#7a4d00}.pill{display:inline-block;border-radius:999px;padding:4px 9px;font-size:13px;font-weight:900;background:#eef2ff;color:#243e7d;margin:2px}.section-title{font-weight:900;color:#263142;margin:16px 0 8px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}.limit-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.sticky-note{font-size:13px;color:#475467;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin:8px 0}
+
+.eval-table{table-layout:fixed;width:100%;}
+.eval-table th,.eval-table td{white-space:normal;word-break:break-word;overflow-wrap:anywhere;}
+.eval-table th:first-child,.eval-table td:first-child{width:15%;}
+.eval-table th small,.priority-table th small,.canvas-table th small{display:block;font-size:12px;line-height:1.35;font-weight:700;opacity:.95;margin-top:4px;}
+.eval-table .score-select{min-width:0;width:100%;max-width:100%;}
+.priority-table{table-layout:fixed;width:100%;}
+.priority-table th,.priority-table td{white-space:normal;word-break:break-word;overflow-wrap:anywhere;}
+.priority-table .score-select{min-width:0;width:100%;max-width:100%;}
+
 @media print{header,.gate,.actions button.secondary,.actions button:not(.print-keep){display:none!important}body{background:#fff}section{box-shadow:none;border:0}.table-wrap{overflow:visible}main{max-width:100%;margin:0;padding:0}.result-box{break-inside:avoid}}
 @media(max-width:900px){.grid-3,.grid-4,.two-col{grid-template-columns:1fr}.row{grid-template-columns:1fr}.gate-row{grid-template-columns:1fr}.header-inner{align-items:flex-start;flex-direction:column}}
 </style>
@@ -25,7 +35,6 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
       <h1>COCA 商圈活動設計框架</h1>
       <div class="subtitle">從門店商圈判讀、顧客需求、我們條件與限制，收斂出可執行的商圈行動。</div>
     </div>
-    <div class="badge">課堂版 V32</div>
   </div>
 </header>
 <main>
@@ -528,7 +537,7 @@ function renderPriorityTable(){
   document.getElementById('priorityArea').innerHTML = `
     <h3>客群經營優先判斷</h3>
     <p class="hint">請依門店實際情況評估低／中／高。</p>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table class="priority-table">
       <thead><tr><th>客群</th>
         <th>績效貢獻<br><small>對業績、來客、回訪或團訂的幫助</small></th>
         <th>需求清楚<br><small>是否知道情境、需求與痛點</small></th>
@@ -539,27 +548,49 @@ function renderPriorityTable(){
     <div id="priorityResult"></div>`;
   document.getElementById('finishStep1').addEventListener('click', finishStep1);
 }
+function showStep1Gate(){
+  state.completed[1] = true;
+  document.getElementById('gate2').classList.remove('hidden');
+}
+function setPriorityRecommendation(rows, recommendedName){
+  rows.forEach(r=>r.treatment = r.name===recommendedName ? '本次優先' : (r.weighted>=3 ? '次要觀察' : '暫不優先'));
+  state.step1.priority = {recommended:recommendedName, sorted:rows};
+  document.getElementById('priorityResult').innerHTML = `
+    <div class="result-box">
+      <h3>系統建議本次優先經營：${esc(recommendedName)}</h3>
+      <p class="hint">這項判斷會作為後續 Action Design 的主要依據。其他客群可作為次要觀察或後續發展方向，不建議本次同時展開太多對象。</p>
+    </div>`;
+  showStep1Gate();
+}
 function finishStep1(){
   const weights = {performance:.5, need:.25, contact:.25};
   const rows = state.step1.customers.map((d,i)=>{
     const scores = {};
     document.querySelectorAll(`.priority-select[data-row="${i}"]`).forEach(sel=>scores[sel.dataset.key]=Number(sel.value));
     const weighted = Object.entries(weights).reduce((sum,[k,w])=>sum+(scores[k]||0)*w,0);
-    let treatment = '暫不優先';
-    if(weighted>=4) treatment = '本次優先';
-    else if(weighted>=3) treatment = '次要觀察';
+    let treatment = weighted>=4 ? '本次優先' : (weighted>=3 ? '次要觀察' : '暫不優先');
     return {...d, priorityScores:scores, weighted:+weighted.toFixed(2), treatment};
   }).sort((a,b)=>b.weighted-a.weighted);
-  const top = rows[0];
-  top.treatment = '本次優先';
-  state.step1.priority = {recommended:top.name, sorted:rows};
+  const max = rows[0]?.weighted;
+  const topRows = rows.filter(r=>r.weighted===max);
+  if(topRows.length===1){
+    setPriorityRecommendation(rows, topRows[0].name);
+    return;
+  }
   document.getElementById('priorityResult').innerHTML = `
-    <div class="result-box">
-      <h3>系統建議本次優先經營：${esc(top.name)}</h3>
-      <p class="hint">這項判斷會作為後續 Action Design 的主要依據。其他客群可作為次要觀察或後續發展方向，不建議本次同時展開太多對象。</p>
+    <div class="warning-box">
+      目前有多個客群同分最高。請依照本店實際客流、店總經理推動意願與本次活動目標，選擇一個本次優先經營客群。
+      <div class="grid-2" style="margin-top:10px">
+        ${topRows.map(r=>`<label class="choice"><input type="radio" name="manualPriorityCustomer" value="${esc(r.name)}"> <span>${esc(r.name)}</span></label>`).join('')}
+      </div>
+      <div class="actions"><button type="button" id="confirmPriorityCustomer">確認優先客群</button></div>
     </div>`;
-  state.completed[1] = true;
-  document.getElementById('gate2').classList.remove('hidden');
+  document.getElementById('gate2').classList.add('hidden');
+  document.getElementById('confirmPriorityCustomer').addEventListener('click', ()=>{
+    const pick = checkedValues('input[name="manualPriorityCustomer"]')[0];
+    if(!pick){alert('請先選擇一個本次優先經營客群。'); return;}
+    setPriorityRecommendation(rows, pick);
+  });
 }
 
 const step2Blocks = [
@@ -677,7 +708,7 @@ function renderEvaluation(){
   document.getElementById('evaluationArea').innerHTML = `
     <h3>方案評估表</h3>
     <p class="hint">請用 1／3／5 評估每個候選方案，5 分代表條件較好，1 分代表條件較弱。</p>
-    <div class="table-wrap"><table><thead><tr><th>方案</th>
+    <div class="table-wrap"><table class="eval-table"><thead><tr><th>方案</th>
         <th>效益<br><small>對業績、來客、回訪、團訂或商圈接觸的幫助</small></th>
         <th>可行性<br><small>目前人力、流程、設備、空間與資源是否容易執行</small></th>
         <th>成本<br><small>人力、時間、物料或費用負擔是否低</small></th>
