@@ -13,6 +13,7 @@ section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:
 label.choice{display:flex;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;margin:6px 0;cursor:pointer;align-items:flex-start;background:#fff;line-height:1.5}label.choice:hover{background:#fbfff8;border-color:#b7dba8}label.choice input{margin-top:4px}input[type=text],input[type=password],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit;background:#fff}textarea{min-height:80px;line-height:1.6}.row{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;margin:10px 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}button{border:0;background:var(--brand);color:#fff;border-radius:10px;padding:11px 14px;font-weight:900;cursor:pointer;font-size:15px}button.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}button:disabled{opacity:.55;cursor:not-allowed}.gate{background:#f8fafc;border:1px dashed #94a3b8;border-radius:14px;padding:16px;margin-top:12px}.gate-row{display:grid;grid-template-columns:1fr auto;gap:10px;max-width:520px}.error{color:var(--danger);font-weight:800;margin-top:8px}.success{color:var(--good);font-weight:900}.hidden{display:none!important}
 table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{background:var(--brand);color:#fff;text-align:left;padding:10px;border:1px solid #c8161d;white-space:nowrap}td{padding:10px;border:1px solid #e4e7ec;vertical-align:top;line-height:1.55}tr:nth-child(even) td{background:#fff8f8}.table-wrap{overflow-x:auto}.score-select{min-width:92px}
 .result-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:14px;padding:16px;margin-top:14px}.result-box h3{margin-top:0}.warning-box{background:#fff8e6;border:1px solid #fedf89;border-radius:14px;padding:14px;margin-top:12px;color:#7a4d00}.pill{display:inline-block;border-radius:999px;padding:4px 9px;font-size:13px;font-weight:900;background:#eef2ff;color:#243e7d;margin:2px}.section-title{font-weight:900;color:#263142;margin:16px 0 8px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}.limit-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.sticky-note{font-size:13px;color:#475467;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;margin:8px 0}
+@media print{header,.gate,.actions button.secondary,.actions button:not(.print-keep){display:none!important}body{background:#fff}section{box-shadow:none;border:0}.table-wrap{overflow:visible}main{max-width:100%;margin:0;padding:0}.result-box{break-inside:avoid}}
 @media(max-width:900px){.grid-3,.grid-4,.two-col{grid-template-columns:1fr}.row{grid-template-columns:1fr}.gate-row{grid-template-columns:1fr}.header-inner{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
@@ -24,13 +25,13 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
       <h1>COCA 商圈活動設計框架</h1>
       <div class="subtitle">從門店商圈判讀、顧客需求、我們條件與限制，收斂出可執行的商圈行動。</div>
     </div>
-    <div class="badge">課堂版 V30</div>
+    <div class="badge">課堂版 V31</div>
   </div>
 </header>
 <main>
   <section id="basicSec">
     <h2>基本資料</h2>
-    <p class="hint">請先填寫小組與門店資料。資料只會在完成最後 Action Design 後送入後台。</p>
+    <p class="hint">請先填寫小組與門店資料，作為本組成果表的識別資訊。</p>
     <div class="grid-2">
       <div><label>組別<input id="groupName" type="text" placeholder="例如：第三組"></label></div>
       <div><label>門店<input id="storeName" type="text" placeholder="例如：武松店"></label></div>
@@ -57,38 +58,40 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
       <label>次要高峰時段，可不選<select id="q2Secondary"></select></label>
     </div>
 
-    <h3>Q3｜你的店最常見的訂單型態是哪一種？</h3>
-    <p class="hint">請選最主要訂單；若有明顯第二種訂單，可再選次要訂單。</p>
+    <h3>Q3｜顧客來買時，最常見的購買任務是哪一種？</h3>
+    <p class="hint">請選最主要的購買任務；若有明顯第二種，可再選次要。</p>
     <div class="grid-2">
-      <label>主要訂單型態<select id="q3Primary"></select></label>
-      <label>次要訂單型態，可不選<select id="q3Secondary"></select></label>
+      <label>主要購買任務<select id="q3Primary"></select></label>
+      <label>次要購買任務，可不選<select id="q3Secondary"></select></label>
     </div>
 
-    <h3>Q4｜你的店最容易接觸到哪一類外部對象？</h3>
-    <p class="hint">請選最容易接觸的對象；若有明顯第二類對象，可再選次要對象。</p>
+    <h3>Q4｜平常最多來買的顧客是哪一類？</h3>
+    <p class="hint">請選平常最常來買的一類顧客；若有明顯第二類顧客，可再選次要顧客。</p>
     <div class="grid-2">
-      <label>主要接觸對象<select id="q4Primary"></select></label>
-      <label>次要接觸對象，可不選<select id="q4Secondary"></select></label>
+      <label>主要顧客類型<select id="q4Primary"></select></label>
+      <label>次要顧客類型，可不選<select id="q4Secondary"></select></label>
     </div>
 
-    <h3>Q5｜你的店目前最想強化哪一種生意？</h3>
-    <p class="hint">這題是經營目標，用來校準後續 Action Design，不直接決定商圈類型。</p>
+    <h3>Q5｜在這個商圈條件下，你目前最想強化哪一種生意？</h3>
+    <p class="hint">請先依 Q1～Q4 產生符合商圈主副型的經營目標選項，再選擇本次最想強化的方向。</p>
+    <div class="actions"><button class="secondary" id="prepareQ5" type="button">產生經營目標選項</button></div>
     <div id="q5Target" class="grid-2"></div>
+    <div id="q5OtherArea" class="hidden"><label>其他經營目標<input id="q5OtherText" type="text" placeholder="例如：醫院陪診家屬取餐、夜班工作者宵夜"></label></div>
 
     <div class="actions"><button id="finishStep0">完成 Step 0 並產出商圈判讀</button></div>
     <div id="step0Result"></div>
     <div id="gate1" class="gate hidden">
-      <strong>下一步：Step 1｜看見顧客</strong>
+      <strong>下一步：Step 1｜C. 消費者的需求與痛點</strong>
       <p class="hint">請等待講師公布通關碼後再進入下一階段。</p>
-      <div class="gate-row"><input type="password" id="pass1" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(1)">進入 Step 1</button></div>
+      <div class="gate-row"><input type="text" id="pass1" autocomplete="off" spellcheck="false" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(1)">進入 Step 1</button></div>
       <div id="pass1Msg" class="error"></div>
     </div>
   </section>
 
   <section id="step1" class="locked hidden">
-    <h2>Step 1｜C. 看見顧客：選出本店值得盤點的客群</h2>
-    <p class="hint">系統會依 Step 0 的商圈判讀提供建議客群。請選擇 2～3 類本店最值得進一步盤點的顧客；若有遺漏，可新增其他。</p>
-    <div id="customerChoices" class="grid-3"></div>
+    <h2>Step 1｜C. 消費者的需求與痛點</h2>
+    <p class="hint">本階段將依據 Step 0「平常最多來買的顧客」帶入主要與次要顧客類型。請針對這些顧客，盤點他們通常出現的情境、主要需求或痛點，以及可能選擇我們的理由。若還有重要顧客，可新增其他。</p>
+    <div id="customerChoices" class="card soft"></div>
     <div class="card soft">
       <label>其他顧客，可不填<input id="otherCustomer" type="text" placeholder="例如：醫院陪診家屬、醫護人員、夜班工作者"></label>
       <button class="secondary" id="addOtherCustomer" type="button">加入其他顧客</button>
@@ -97,44 +100,44 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
     <div id="customerMapArea"></div>
     <div id="priorityArea"></div>
     <div id="gate2" class="gate hidden">
-      <strong>下一步：Step 2｜盤點我們</strong>
+      <strong>下一步：Step 2｜O. 現有的作戰條件盤點</strong>
       <p class="hint">請等待講師公布通關碼後再進入下一階段。</p>
-      <div class="gate-row"><input type="password" id="pass2" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(2)">進入 Step 2</button></div>
+      <div class="gate-row"><input type="text" id="pass2" autocomplete="off" spellcheck="false" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(2)">進入 Step 2</button></div>
       <div id="pass2Msg" class="error"></div>
     </div>
   </section>
 
   <section id="step2" class="locked hidden">
-    <h2>Step 2｜O. 盤點我們：作戰條件盤點</h2>
-    <p class="hint">請盤點店總、門店、總部與商圈條件。這一步不是只看資源，也要看哪些條件會影響後續活動落地。</p>
+    <h2>Step 2｜O. 現有的作戰條件盤點</h2>
+    <p class="hint">請盤點店總經理、門店、總部與商圈中，哪些條件可以被運用，哪些限制需要處理。這一步是為了判斷後續行動是否做得出來、做得穩。</p>
     <div id="step2Area"></div>
     <div class="actions"><button id="finishStep2">完成 Step 2 並整理條件</button></div>
     <div id="step2Result"></div>
     <div id="gate3" class="gate hidden">
-      <strong>下一步：Step 3｜看懂限制</strong>
+      <strong>下一步：Step 3｜C. 條件與限制的影響與避開方式</strong>
       <p class="hint">請等待講師公布通關碼後再進入下一階段。</p>
-      <div class="gate-row"><input type="password" id="pass3" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(3)">進入 Step 3</button></div>
+      <div class="gate-row"><input type="text" id="pass3" autocomplete="off" spellcheck="false" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(3)">進入 Step 3</button></div>
       <div id="pass3Msg" class="error"></div>
     </div>
   </section>
 
   <section id="step3" class="locked hidden">
-    <h2>Step 3｜C. 看懂限制：影響與處理方向</h2>
-    <p class="hint">系統會帶入你在 Step 2 勾選的待處理限制。這一步不是重新盤點限制，而是把限制轉成後續行動設計時必須處理的條件。</p>
+    <h2>Step 3｜C. 條件與限制的影響與避開方式</h2>
+    <p class="hint">請選出最可能影響本次行動的關鍵限制，並判斷它會影響顧客、營運或活動執行的哪一部分。</p>
     <div id="step3Area"></div>
     <div class="actions"><button id="finishStep3">完成 Step 3 並整理限制影響</button></div>
     <div id="step3Result"></div>
     <div id="gate4" class="gate hidden">
-      <strong>下一步：Step 4｜設計行動</strong>
+      <strong>下一步：Step 4｜A. 行動設計／設計方案</strong>
       <p class="hint">請等待講師公布通關碼後再進入下一階段。</p>
-      <div class="gate-row"><input type="password" id="pass4" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(4)">進入 Step 4</button></div>
+      <div class="gate-row"><input type="text" id="pass4" autocomplete="off" spellcheck="false" placeholder="請輸入講師公布的通關碼"><button onclick="unlockStep(4)">進入 Step 4</button></div>
       <div id="pass4Msg" class="error"></div>
     </div>
   </section>
 
   <section id="step4" class="locked hidden">
-    <h2>Step 4｜A. 設計行動：候選方案與評估</h2>
-    <p class="hint">AI 或系統會根據前面 COCA 內容產出 3～6 個候選行動方案。請先挑 2～3 個最值得進一步比較的方案，再進入評估。</p>
+    <h2>Step 4｜A. 行動設計／設計方案</h2>
+    <p class="hint">AI 或系統會根據前面 COCA 內容產出 3～6 個候選行動方案。請至少選擇 2 個你認為值得進一步比較的方案進入評估。</p>
     <div class="actions"><button id="generateActions">產生候選行動方案</button></div>
     <div id="candidateArea"></div>
     <div id="evaluationArea"></div>
@@ -188,26 +191,47 @@ const OPTIONS = {
     ['special_event','節慶、活動日或不固定特殊高峰']
   ],
   q3:[
-    ['personal_quick','個人快速餐'],
-    ['family_share','家庭分享餐'],
-    ['group_preorder','團體預訂餐'],
-    ['grab_go','即買即走餐'],
-    ['event_large','活動或節慶大量訂單'],
-    ['delivery_takeout_mix','外送／外帶混合型訂單']
+    ['solo_meal','一人快速解決一餐'],
+    ['shared_meal','多人一起分享一餐'],
+    ['group_supply','公司／學校／團體需要大量供餐'],
+    ['impulse_buy','臨時被吸引而購買'],
+    ['event_bulk','特殊日期或活動需要集中訂餐']
   ],
   q4:[
-    ['company','公司、辦公室、園區或企業窗口'],
-    ['community','社區住戶、管委會、附近居民或熟客'],
-    ['school','學校、補習班、社團或學生族群'],
-    ['passers','轉乘客、旅客、過路客或商場流動人潮'],
-    ['leisure_partner','商場、夜市、觀光點、娛樂場所或地方活動單位']
+    ['workers','上班族／工作人口'],
+    ['residents','附近居民／家庭客'],
+    ['students','學生／補習族群'],
+    ['mobile','過路客／移動人流'],
+    ['leisure_visitors','觀光／休閒／活動客'],
+    ['special_place','特殊場域顧客'],
+    ['other','其他']
+  ]
+};
+const Q5_BY_TYPE = {
+  office:[
+    '平日午餐、辦公室訂單或公司團訂',
+    '會議餐點或部門活動預訂',
+    '園區／工業區團體預購'
   ],
-  q5:[
-    ['office','平日午餐、辦公室訂單或公司團訂'],
-    ['res','晚餐、週末家庭客或附近熟客回訪'],
-    ['campus','學生客、點心時段、社團或班級活動訂單'],
-    ['transit','過路客、快速外帶或即買即走'],
-    ['leisure','假日人流、觀光客、商場活動或地方節慶']
+  res:[
+    '晚餐、週末家庭客或附近熟客回訪',
+    '家庭分享餐預購',
+    '社區熟客回訪'
+  ],
+  campus:[
+    '學生客、點心時段、社團或班級活動訂單',
+    '補習班或安親班點心合作',
+    '放學後小份量餐點'
+  ],
+  transit:[
+    '過路客、快速外帶或即買即走',
+    '預購快取或短時間取餐',
+    '現場臨時購買轉換'
+  ],
+  leisure:[
+    '假日人流、觀光客、商場活動或地方節慶',
+    '逛街客臨時購買',
+    '活動日或節慶集中訂餐'
   ]
 };
 const PASS = {1:'看見顧客',2:'盤點我們',3:'看懂限制',4:'設計行動'};
@@ -252,13 +276,13 @@ function updateQ1Top(){
 }
 function renderStep0Controls(){
   renderEnv();
-  document.getElementById('q2Primary').innerHTML = makeSelectOptions(OPTIONS.q2, true);
+  document.getElementById('q2Primary').innerHTML = makeSelectOptions(OPTIONS.q2, false);
   document.getElementById('q2Secondary').innerHTML = makeSelectOptions(OPTIONS.q2, true);
-  document.getElementById('q3Primary').innerHTML = makeSelectOptions(OPTIONS.q3, true);
+  document.getElementById('q3Primary').innerHTML = makeSelectOptions(OPTIONS.q3, false);
   document.getElementById('q3Secondary').innerHTML = makeSelectOptions(OPTIONS.q3, true);
-  document.getElementById('q4Primary').innerHTML = makeSelectOptions(OPTIONS.q4, true);
+  document.getElementById('q4Primary').innerHTML = makeSelectOptions(OPTIONS.q4, false);
   document.getElementById('q4Secondary').innerHTML = makeSelectOptions(OPTIONS.q4, true);
-  document.getElementById('q5Target').innerHTML = OPTIONS.q5.map(([k,l])=>`<label class="choice"><input type="radio" name="q5" value="${esc(k)}"> <span>${esc(l)}</span></label>`).join('');
+  renderQ5Empty();
 }
 function mapByKey(items){const m={}; items.forEach(i=>m[i[0]]=i); return m;}
 const envMap = mapByKey(ENV_ITEMS);
@@ -280,14 +304,58 @@ function q2Map(key){
 }
 function q3Map(key){
   return {
-    personal_quick:{office:1,transit:.5}, family_share:{res:1.5}, group_preorder:{office:1,campus:.5},
-    grab_go:{transit:1.5}, event_large:{leisure:1.2,campus:.5}, delivery_takeout_mix:{res:.8,office:.4}
+    solo_meal:{office:1,transit:.6,campus:.4},
+    shared_meal:{res:1.5,leisure:.3},
+    group_supply:{office:1.2,campus:.8,res:.3},
+    impulse_buy:{transit:1.1,leisure:.8},
+    event_bulk:{leisure:1.2,campus:.5,res:.5}
   }[key]||{};
 }
 function q4Map(key){
-  return {company:{office:1.5},community:{res:1.5},school:{campus:1.5},passers:{transit:1.5},leisure_partner:{leisure:1.5}}[key]||{};
+  return {
+    workers:{office:1.5},
+    residents:{res:1.5},
+    students:{campus:1.5},
+    mobile:{transit:1.5},
+    leisure_visitors:{leisure:1.5},
+    special_place:{res:.6,office:.4},
+    other:{}
+  }[key]||{};
 }
-function calculateStep0(){
+function renderQ5Empty(){
+  document.getElementById('q5Target').innerHTML = '<div class="notice blue">完成 Q1～Q4 後，請按「產生經營目標選項」。</div>';
+  document.getElementById('q5OtherArea').classList.add('hidden');
+}
+function q5OptionsFor(main, sub){
+  const out = [];
+  const add = arr => (arr||[]).forEach(x=>{if(!out.includes(x)) out.push(x);});
+  add(Q5_BY_TYPE[main]);
+  add(Q5_BY_TYPE[sub]);
+  out.push('其他，請自行補充');
+  return out;
+}
+function renderQ5Options(main, sub){
+  const opts = q5OptionsFor(main, sub);
+  document.getElementById('q5Target').innerHTML = opts.map((label,i)=>{
+    const isOther = label.startsWith('其他');
+    return `<label class="choice"><input type="radio" name="q5" value="${esc(label)}" data-other="${isOther?'1':'0'}"> <span>${esc(label)}</span></label>`;
+  }).join('');
+  document.querySelectorAll('input[name="q5"]').forEach(r=>r.addEventListener('change', ()=>{
+    const selected = document.querySelector('input[name="q5"]:checked');
+    document.getElementById('q5OtherArea').classList.toggle('hidden', !(selected?.dataset.other==='1'));
+  }));
+}
+function classifyOtherGoal(text){
+  const t = String(text||'');
+  if(/公司|辦公|會議|團訂|園區|工廠|企業/.test(t)) return 'office';
+  if(/家庭|社區|住戶|熟客|週末|晚餐/.test(t)) return 'res';
+  if(/學生|學校|補習|安親|社團|班級/.test(t)) return 'campus';
+  if(/過路|轉乘|車站|快取|即買|外帶/.test(t)) return 'transit';
+  if(/觀光|夜市|商場|影城|活動|節慶|逛街/.test(t)) return 'leisure';
+  if(/醫院|診所|醫護|陪診|宗教|體育|政府/.test(t)) return 'special';
+  return 'unknown';
+}
+function calculateStep0Base(){
   const env = checkedValues('input[name="env"]');
   if(!val('groupName') || !val('storeName')) throw new Error('請先填寫組別與門店。');
   if(env.length===0) throw new Error('Q1 請至少勾選 1 項店附近明顯環境。');
@@ -295,8 +363,8 @@ function calculateStep0(){
   const selectedLabels = env.map(k=>envMap[k]?.[1]);
   if(top1 && !selectedLabels.includes(top1)) throw new Error('Q1 最影響生意的環境，請從已勾選項目中填寫。');
   if(top2 && !selectedLabels.includes(top2)) throw new Error('Q1 次重要環境，請從已勾選項目中填寫。');
-  const q2p=val('q2Primary'), q3p=val('q3Primary'), q4p=val('q4Primary'), q5=checkedValues('input[name="q5"]')[0];
-  if(!q2p || !q3p || !q4p || !q5) throw new Error('Q2～Q5 請完成主要答案。');
+  const q2p=val('q2Primary'), q3p=val('q3Primary'), q4p=val('q4Primary');
+  if(!q2p || !q3p || !q4p) throw new Error('Q2～Q4 請完成主要答案。');
   const q2s=val('q2Secondary'), q3s=val('q3Secondary'), q4s=val('q4Secondary');
   const scores = {office:0,res:0,campus:0,transit:0,leisure:0};
   env.forEach(k=>addScore(scores, envMap[k]?.[3], 1));
@@ -310,16 +378,47 @@ function calculateStep0(){
   addScore(scores, q4Map(q4p), 1.2); if(q4s) addScore(scores, q4Map(q4s), .6);
   const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
   const main = sorted[0][0], sub = sorted[1][1] > 0 ? sorted[1][0] : '';
-  const targetMisalign = q5 && q5!==main && q5!==sub;
   return {
     env, envLabels:selectedLabels, top1, top2,
     q2:{primary:q2p, secondary:q2s, primaryLabel:labelBy(OPTIONS.q2,q2p), secondaryLabel:labelBy(OPTIONS.q2,q2s)},
     q3:{primary:q3p, secondary:q3s, primaryLabel:labelBy(OPTIONS.q3,q3p), secondaryLabel:labelBy(OPTIONS.q3,q3s)},
     q4:{primary:q4p, secondary:q4s, primaryLabel:labelBy(OPTIONS.q4,q4p), secondaryLabel:labelBy(OPTIONS.q4,q4s)},
-    q5:{type:q5, label:labelBy(OPTIONS.q5,q5)},
     scores, sorted:sorted.map(([type,score])=>({type,score:+score.toFixed(2),label:typeLabel(type)})),
-    main, sub, typeLabel:`${typeShort(main)}主型${sub ? '、'+typeShort(sub)+'副型':''}`,
-    targetMisalign
+    main, sub, typeLabel:`${typeShort(main)}主型${sub ? '、'+typeShort(sub)+'副型':''}`
+  };
+}
+function prepareQ5Options(){
+  try{
+    const base = calculateStep0Base();
+    renderQ5Options(base.main, base.sub);
+    document.getElementById('q5Target').insertAdjacentHTML('beforebegin', `<div class="sticky-note">已依目前判讀「${esc(base.typeLabel)}」產生經營目標選項。若前面答案有修改，請重新產生一次。</div>`);
+  }catch(e){alert(e.message);}
+}
+
+function calculateStep0(){
+  const base = calculateStep0Base();
+  const selected = document.querySelector('input[name="q5"]:checked');
+  if(!selected){
+    renderQ5Options(base.main, base.sub);
+    throw new Error('請先選擇 Q5 經營目標。若剛修改 Q1～Q4，請確認 Q5 選項後再完成 Step 0。');
+  }
+  let q5Label = selected.value;
+  let q5Type = selected.dataset.other==='1' ? 'other' : (base.main || '');
+  let otherText = '';
+  let needConfirm = false;
+  let otherClass = '';
+  if(selected.dataset.other==='1'){
+    otherText = val('q5OtherText');
+    if(!otherText) throw new Error('選擇其他時，請簡短填寫想強化的生意。');
+    q5Label = otherText;
+    otherClass = classifyOtherGoal(otherText);
+    if(otherClass !== 'special' && otherClass !== base.main && otherClass !== base.sub) needConfirm = true;
+  }
+  return {
+    ...base,
+    q5:{type:q5Type, label:q5Label, otherText, otherClass},
+    needsGoalConfirm: needConfirm,
+    goalConfirmed: !needConfirm
   };
 }
 function finishStep0(){
@@ -332,11 +431,19 @@ function finishStep0(){
         <h3>商圈判讀結果</h3>
         <p><strong>系統初步判斷：${esc(s.typeLabel)}</strong></p>
         <p class="hint">${esc(TYPES[s.main].desc)}${s.sub ? ' 同時也具有「'+esc(TYPES[s.sub].label)+'」的部分特徵，可作為後續顧客盤點與行動設計的副型參考。' : ''}</p>
-        ${s.targetMisalign ? `<div class="warning-box">你最想強化的生意與目前商圈主副型不完全一致。這不代表不能做，但後續需要確認是否有足夠客流、資源或接觸管道。</div>` : ''}
-        <p class="small">此判讀來自店附近環境、忙碌時段、訂單型態與接觸對象；詳細分數保留在後台資料，不在學員畫面顯示。</p>
+        ${s.needsGoalConfirm ? `<div class="warning-box">你補充的經營目標，與目前商圈主副型不完全一致。這不代表不能做，但請確認門店是否有足夠客流、資源或接觸條件。<div class="actions"><button type="button" onclick="confirmGoalAndShowGate()">確認，仍以這個方向繼續</button><button type="button" class="secondary" onclick="returnToStep0()">返回修改 Step 0</button></div></div>` : ''}
+        <p class="small">此判讀來自店附近環境、忙碌時段、購買任務與主要顧客類型；詳細分數保留在後台資料，不在學員畫面顯示。</p>
       </div>`;
-    document.getElementById('gate1').classList.remove('hidden');
+    document.getElementById('gate1').classList.toggle('hidden', !!s.needsGoalConfirm);
   }catch(e){alert(e.message);}
+}
+window.confirmGoalAndShowGate = function(){
+  if(state.step0) state.step0.goalConfirmed = true;
+  document.getElementById('gate1').classList.remove('hidden');
+}
+window.returnToStep0 = function(){
+  document.getElementById('gate1').classList.add('hidden');
+  document.getElementById('step0').scrollIntoView({behavior:'smooth', block:'start'});
 }
 window.unlockStep = function(n){
   const input = document.getElementById('pass'+n);
@@ -353,44 +460,38 @@ window.unlockStep = function(n){
   if(n===3) renderStep3();
 };
 
-const CUSTOMER_BY_TYPE = {
-  res:['附近熟客','家庭分享餐客','社區居民','週末家庭客'],
-  office:['平日午餐上班族','公司／辦公室團訂客','會議餐點需求客','園區／工業區工作者'],
-  campus:['學生客','補習班客','社團／班級活動客','放學後點心客'],
-  transit:['快速外帶客','過路／轉乘客','即買即走客'],
-  leisure:['逛街客','觀光客','活動／節慶人流客','商場／娛樂場所客']
-};
-function recommendedCustomers(){
+function getStep1Customers(){
   const out = [];
-  const add = arr => arr.forEach(x=>{if(!out.includes(x)) out.push(x);});
-  if(state.step0?.main) add(CUSTOMER_BY_TYPE[state.step0.main] || []);
-  if(state.step0?.sub) add(CUSTOMER_BY_TYPE[state.step0.sub] || []);
-  if((state.step0?.env||[]).includes('hospital')) add(['醫院陪診家屬','醫護人員']);
-  return out.slice(0,10);
+  if(state.step0?.q4?.primaryLabel) out.push({source:'主要顧客', name:state.step0.q4.primaryLabel});
+  if(state.step0?.q4?.secondaryLabel) out.push({source:'次要顧客', name:state.step0.q4.secondaryLabel});
+  (state.step1ExtraCustomers || []).forEach(x=>out.push({source:'其他顧客', name:x}));
+  return out.filter(x=>x.name && x.name !== '其他');
 }
 function renderCustomerChoices(){
-  const customers = recommendedCustomers();
-  document.getElementById('customerChoices').innerHTML = customers.map(c=>`<label class="choice"><input type="checkbox" name="cust" value="${esc(c)}"> <span>${esc(c)}</span></label>`).join('');
-  document.querySelectorAll('input[name="cust"]').forEach(cb=>cb.addEventListener('change', ()=>{
-    const selected = checkedValues('input[name="cust"]');
-    if(selected.length>3){ cb.checked=false; alert('請選擇 2～3 類顧客，避免一次服務太多對象。'); }
-  }));
+  state.step1ExtraCustomers = state.step1ExtraCustomers || [];
+  const customers = getStep1Customers();
+  document.getElementById('customerChoices').innerHTML = `
+    <h3>本階段盤點顧客</h3>
+    <div class="table-wrap"><table><thead><tr><th>顧客來源</th><th>顧客類型</th></tr></thead><tbody>
+      ${customers.map(c=>`<tr><td>${esc(c.source)}</td><td><strong>${esc(c.name)}</strong></td></tr>`).join('')}
+    </tbody></table></div>`;
 }
 document.getElementById('addOtherCustomer').addEventListener('click', ()=>{
   const name = val('otherCustomer');
   if(!name) return;
-  const wrap = document.getElementById('customerChoices');
-  if(Array.from(document.querySelectorAll('input[name="cust"]')).some(x=>x.value===name)){alert('此顧客已存在。'); return;}
-  wrap.insertAdjacentHTML('beforeend', `<label class="choice"><input type="checkbox" name="cust" value="${esc(name)}" checked> <span>${esc(name)}</span></label>`);
+  state.step1ExtraCustomers = state.step1ExtraCustomers || [];
+  if(state.step1ExtraCustomers.includes(name) || getStep1Customers().some(x=>x.name===name)){alert('此顧客已存在。'); return;}
+  state.step1ExtraCustomers.push(name);
   document.getElementById('otherCustomer').value='';
+  renderCustomerChoices();
 });
 const CONTEXT_OPTS = ['平日中午','平日晚餐','週五晚上','週末或連假','放學後／補習前後','公司會議或活動','社區或家庭聚會','路過／轉乘／逛街','節慶或地方活動','臨時不想煮飯','其他'];
 const PAIN_OPTS = ['想快速解決一餐','需要多人一起分享','希望價格划算','希望準時取餐','不想等待太久','需要外帶或外送方便','需要大量供餐且好分配','希望選擇簡單、容易決策','重視品質穩定','需要活動或團體餐點','其他'];
 const REASON_OPTS = ['品牌熟悉','可預購','適合分享','外帶／外送方便','位置方便','套餐或促銷清楚','品質穩定','可配合團體或合作窗口','其他'];
 function checklist(name, opts){return opts.map(o=>`<label class="choice"><input type="checkbox" name="${esc(name)}" value="${esc(o)}"> <span>${esc(o)}</span></label>`).join('');}
 function buildCustomerMap(){
-  const customers = checkedValues('input[name="cust"]');
-  if(customers.length<2 || customers.length>3){alert('請選擇 2～3 類本店最值得盤點的顧客。'); return;}
+  const customers = getStep1Customers().map(x=>x.name);
+  if(customers.length<1){alert('請至少保留 1 類顧客。'); return;}
   const cards = customers.map((c,i)=>`
     <div class="card" data-customer="${esc(c)}">
       <h3>${esc(c)}</h3>
@@ -427,9 +528,9 @@ function renderPriorityTable(){
     </tr>`).join('');
   document.getElementById('priorityArea').innerHTML = `
     <h3>客群經營優先判斷</h3>
-    <p class="hint">請依門店實際情況評估低／中／高。系統會在內部計算，前台只顯示本次建議優先經營的一類顧客。</p>
+    <p class="hint">請依門店實際情況評估低／中／高。績效貢獻看這類顧客對業績、來客、回訪或團訂的幫助；需求清楚看我們是否知道他的需求與痛點；接觸容易看我們是否找得到、通知得到或影響得到這類顧客；資源支援看目前店總、門店、總部與商圈條件是否能支援；限制好處理看相關限制是否能透過調整方式降低影響。</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>客群</th><th>績效貢獻</th><th>需求明確</th><th>容易接觸</th><th>資源適合</th><th>限制可控</th></tr></thead>
+      <thead><tr><th>客群</th><th>績效貢獻</th><th>需求清楚</th><th>接觸容易</th><th>資源支援</th><th>限制好處理</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
     <div class="actions"><button id="finishStep1">完成客群優先判斷</button></div>
@@ -469,7 +570,7 @@ const step2Blocks = [
   {id:'process', title:'流程條件', strengths:['預購流程清楚','外帶／外送流程穩定','團訂或大單處理經驗足夠','尖峰出餐流程成熟','訂單確認、取餐提醒、備餐分工清楚'], limits:['尖峰流程已經很緊，活動容易干擾出餐','大單或團訂容易造成備餐壓力','預購、取餐、付款流程容易出錯','活動規則若太複雜，現場難以說明','無法穩定追蹤活動成效或顧客名單']},
   {id:'neighbor', title:'鄰店／區域支援', strengths:['鄰近分店可支援人力或物料','可與鄰近分店共同承接區域活動','可分流訂單或配送範圍','可共享商圈資訊或顧客經驗','區域主管可協助協調資源'], limits:['鄰近分店也有人力壓力，難以支援','各店商圈不同，活動不容易共用','分店之間分工或責任不清楚','訂單分流容易造成顧客混淆','區域協調成本高']},
   {id:'hq', title:'總部資源與支援', type:'strength', opts:['品牌知名度與信任感','現有行銷活動可借用','會員系統或優惠工具','產品組合與套餐素材','外送／預購／團訂機制','社群素材或門店公告素材','總部活動主題可在地化']},
-  {id:'district', title:'商圈可用條件', strengths:['附近有公司或辦公室窗口','附近有社區／管委會／住戶群','附近有學校／補習班／學生族群','附近有車站／商場／過路人流','附近有觀光／夜市／地方活動','附近方便短暫停車或停機車取餐','有可合作的鄰近商家或場域'], limits:['附近停車或機車臨停不便','合作窗口尚未建立','客群接觸點分散，不容易集中溝通','過路人流停留時間短','地方活動或節慶需求波動大']} 
+  {id:'district', title:'商圈可用條件', strengths:['附近有公司或辦公室窗口','附近有社區／管委會／住戶群','附近有學校／補習班／學生族群','附近有車站／商場／過路人流','附近有觀光／夜市／地方活動','附近方便短暫停車或停機車取餐','有可合作的鄰近商家或場域'], limits:['附近停車或機車臨停不便','還沒有固定合作對象','顧客分散，不容易把活動消息傳出去','路過客停留時間短，不容易仔細看活動','活動日和節慶人潮不固定，生意起伏大']} 
 ];
 function renderCheck(name, items){return items.map(o=>`<label class="choice"><input type="checkbox" name="${esc(name)}" value="${esc(o)}"> <span>${esc(o)}</span></label>`).join('');}
 function renderStep2(){
@@ -493,21 +594,22 @@ function finishStep2(){
   });
   state.step2 = {strengths, limits, goals};
   state.completed[2]=true;
-  document.getElementById('step2Result').innerHTML = `<div class="result-box"><h3>Step 2 已完成</h3><p>已整理可用優勢 ${strengths.length} 項、待處理限制 ${limits.length} 項、經營期待 ${goals.length} 項。下一階段會直接帶入待處理限制，不需要重新勾選。</p></div>`;
+  document.getElementById('step2Result').innerHTML = `<div class="result-box"><h3>Step 2 已完成</h3><p>你已完成本店現有作戰條件盤點。</p><div class="table-wrap"><table><thead><tr><th>項目</th><th>數量</th></tr></thead><tbody><tr><td>可用優勢</td><td>${strengths.length} 項</td></tr><tr><td>待處理限制</td><td>${limits.length} 項</td></tr><tr><td>經營期待</td><td>${goals.length} 項</td></tr></tbody></table></div><p class="hint">請等待講師指示，進入下一階段。</p></div>`;
   document.getElementById('gate3').classList.remove('hidden');
 }
 function renderStep3(){
   const limits = state.step2?.limits || [];
-  const list = limits.length ? limits.map((l,i)=>`<label class="choice"><input type="checkbox" name="keyLimit" value="${i}"> <span><strong>${esc(l.category)}</strong>：${esc(l.text)}</span></label>`).join('') : '<div class="notice red">Step 2 尚未勾選待處理限制。請補充至少一項會影響行動設計的限制。</div>';
+  const list = limits.length ? limits.map((l,i)=>`<label class="choice"><input type="checkbox" name="keyLimit" value="${i}"> <span><strong>${esc(l.category)}</strong>：${esc(l.text)}</span></label>`).join('') : '<div class="notice red">目前尚未列出限制。請補充至少一項會影響行動設計的限制。</div>';
   document.getElementById('step3Area').innerHTML = `
-    <h3>Step 3-1｜確認關鍵限制</h3>
-    <p class="hint">請從 Step 2 帶入的限制中，選出最可能影響本次商圈行動的 1～3 項。</p>
+    <h3>Step 3-1｜選出關鍵限制</h3>
+    <p class="hint">請選出最可能影響本次商圈行動的 1～3 項限制。</p>
     ${list}
-    <label>新增限制，可不填<textarea id="extraLimits" placeholder="若 Step 2 沒有列到，可在這裡補充。"></textarea></label>
+    <label>新增限制，可不填<textarea id="extraLimits" placeholder="若還有其他會影響行動的限制，可在這裡補充。"></textarea></label>
     <h3>Step 3-2｜這些限制會造成什麼影響？</h3>
     <div class="grid-2">${renderCheck('impacts',['影響顧客接觸','影響購買便利','影響顧客體驗','影響活動執行','影響出餐效率','影響成本與風險','影響合作推動'])}</div>
-    <h3>Step 3-3｜處理方向</h3>
-    <div class="grid-2">${renderCheck('directions',['避開尖峰時段','縮小活動規模','改成預購／預約制','改在店外、社區、公司、學校或合作場域執行','簡化活動規則','改成低人力、低說明成本的活動','先用少量名額或小範圍測試','借用總部資源或既有行銷素材','透過鄰近分店或區域支援分流','改以外送、團訂或集中取餐方式處理'])}</div>`;
+    <h3>Step 3-3｜活動設計時要如何避開或降低影響？</h3>
+    <p class="hint">請選擇後續設計活動時，可以用來避開、降低或繞過限制影響的做法。</p>
+    <div class="grid-2">${renderCheck('directions',['避開最忙時段，不增加現場壓力','先把活動做小，不一次做太大','改成預購或預約，減少現場等待','把活動放到顧客原本所在的地方','活動規則要簡單，現場容易說明','選擇人力負擔低、說明少的做法','使用總部素材或既有活動，不重新設計','請鄰近分店或區域支援分流','改成外送、團訂或集中取餐'])}</div>`;
   document.querySelectorAll('input[name="keyLimit"]').forEach(cb=>cb.addEventListener('change', ()=>{
     if(checkedValues('input[name="keyLimit"]').length>3){ cb.checked=false; alert('關鍵限制最多選 3 項。');}
   }));
@@ -555,8 +657,8 @@ function renderCandidates(){
   if(!c.length){document.getElementById('candidateArea').innerHTML='<div class="notice red">尚未產生候選方案。</div>';return;}
   document.getElementById('candidateArea').innerHTML = `
     <h3>候選行動方案</h3>
-    <p class="hint">請先閱讀候選方案，再選出 2～3 個最值得進一步評估的方案。至少選 2 個，最多選 3 個。</p>
-    ${state.step4.source==='fallback' ? '<div class="warning-box">目前使用規則式暫用方案；若 Cloudflare 尚未設定 OpenAI API Key，系統仍可運作，但不會是真正 AI 即時生成。</div>' : ''}
+    <p class="hint">請先閱讀候選方案，再選出至少 2 個你認為值得進一步比較的方案。</p>
+    
     <div class="table-wrap"><table><thead><tr><th>選取</th><th>主要服務客群</th><th>方案名稱</th><th>COCA 整合理由</th><th>回應需求</th><th>運用條件</th><th>注意限制</th><th>測試方式</th><th>觀察指標</th></tr></thead><tbody>
       ${c.map((x,i)=>`<tr>
         <td><input type="checkbox" name="candidatePick" value="${i}"></td>
@@ -564,14 +666,11 @@ function renderCandidates(){
       </tr>`).join('')}
     </tbody></table></div>
     <div class="actions"><button id="enterEvaluation">進入方案評估</button></div>`;
-  document.querySelectorAll('input[name="candidatePick"]').forEach(cb=>cb.addEventListener('change', ()=>{
-    if(checkedValues('input[name="candidatePick"]').length>3){cb.checked=false; alert('最多選擇 3 個方案進入評估。');}
-  }));
   document.getElementById('enterEvaluation').addEventListener('click', renderEvaluation);
 }
 function renderEvaluation(){
   const picks = checkedValues('input[name="candidatePick"]').map(Number);
-  if(picks.length<2 || picks.length>3){alert('請選擇 2～3 個方案進入評估。'); return;}
+  if(picks.length<2){alert('請至少選擇 2 個方案進入評估。'); return;}
   const selected = picks.map(i=>state.step4.candidates[i]).filter(Boolean);
   state.step4.selected = selected;
   document.getElementById('evaluationArea').innerHTML = `
@@ -622,6 +721,68 @@ function calculateEvaluation(){
     state.step4.manualTie = true;
   }
 }
+function csvList(items){
+  if(!items) return '';
+  if(Array.isArray(items)) return items.map(x=>typeof x==='string'?x:(x.text||x.name||JSON.stringify(x))).join('、');
+  return String(items);
+}
+function tableRows(rows){
+  return rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+}
+function buildCompleteCocaHtml(winner){
+  const s0=state.step0||{}, s1=state.step1||{}, s2=state.step2||{}, s3=state.step3||{}, s4=state.step4||{};
+  const customers = s1.customers || [];
+  const candidates = s4.candidates || [];
+  const evalRows = s4.evaluation || [];
+  return `
+    <div class="result-box" id="printResult">
+      <h3>Action Design 已完成</h3>
+      <p>以下為本組 COCA 商圈活動設計成果，可供課堂討論、門店帶回整理或後續行動參考。</p>
+      <div class="actions"><button class="secondary print-keep" onclick="window.print()">列印或另存 PDF</button></div>
+
+      <h3>Step 0｜商圈判讀</h3>
+      <div class="table-wrap"><table><tbody>${tableRows([
+        ['商圈判讀', s0.typeLabel||''],
+        ['店附近明顯環境', csvList(s0.envLabels)],
+        ['最忙時段', [s0.q2?.primaryLabel,s0.q2?.secondaryLabel].filter(Boolean).join('、')],
+        ['購買任務', [s0.q3?.primaryLabel,s0.q3?.secondaryLabel].filter(Boolean).join('、')],
+        ['主要／次要顧客', [s0.q4?.primaryLabel,s0.q4?.secondaryLabel].filter(Boolean).join('、')],
+        ['本次經營目標', s0.q5?.label||'']
+      ])}</tbody></table></div>
+
+      <h3>Step 1｜C. 消費者的需求與痛點</h3>
+      <div class="table-wrap"><table><thead><tr><th>顧客類型</th><th>出現情境</th><th>需求與痛點</th><th>選擇我們的理由</th></tr></thead><tbody>${tableRows(customers.map(c=>[c.name,csvList(c.contexts),csvList(c.pains),csvList(c.reasons)]))}</tbody></table></div>
+      <p><strong>本次建議優先經營：</strong>${esc(s1.priority?.recommended||'')}</p>
+
+      <h3>Step 2｜O. 現有的作戰條件盤點</h3>
+      <div class="table-wrap"><table><tbody>${tableRows([
+        ['店總經理經營期待', csvList(s2.goals)],
+        ['可用優勢', csvList(s2.strengths)],
+        ['待處理限制', csvList(s2.limits)]
+      ])}</tbody></table></div>
+
+      <h3>Step 3｜C. 條件與限制的影響與避開方式</h3>
+      <div class="table-wrap"><table><tbody>${tableRows([
+        ['關鍵限制', csvList(s3.keyLimits)],
+        ['造成影響', csvList(s3.impacts)],
+        ['避開或降低影響的做法', csvList(s3.directions)]
+      ])}</tbody></table></div>
+
+      <h3>Step 4｜A. 行動設計／設計方案</h3>
+      <h3>候選方案</h3>
+      <div class="table-wrap"><table><thead><tr><th>主要服務客群</th><th>方案名稱</th><th>COCA 整合理由</th><th>回應需求</th><th>運用條件</th><th>注意限制</th><th>測試方式</th><th>觀察指標</th></tr></thead><tbody>${tableRows(candidates.map(x=>[x.customer,x.name,x.reason,x.need,x.resource,x.constraint,x.test,x.metric]))}</tbody></table></div>
+      <h3>方案評估結果</h3>
+      <div class="table-wrap"><table><thead><tr><th>方案</th><th>效益</th><th>可行性</th><th>成本</th><th>風險性</th><th>測試性</th><th>總分</th></tr></thead><tbody>${tableRows(evalRows.map(r=>[r.plan?.name, r.scores?.benefit, r.scores?.feasibility, r.scores?.cost, r.scores?.risk, r.scores?.testability, r.total]))}</tbody></table></div>
+      <h3>建議優先執行方案</h3>
+      <div class="table-wrap"><table><tbody>${tableRows([
+        ['方案名稱', winner.name],
+        ['主要服務客群', winner.customer],
+        ['COCA 整合理由', winner.reason],
+        ['測試方式', winner.test],
+        ['觀察指標', winner.metric]
+      ])}</tbody></table></div>
+    </div>`;
+}
 async function completeAction(){
   calculateEvaluation();
   if(state.step4.manualTie){
@@ -631,15 +792,7 @@ async function completeAction(){
   }
   const winner = state.step4.selected[state.step4.winnerIndex];
   state.final = {winner, evaluation:state.step4.evaluation, completedAt:new Date().toISOString()};
-  document.getElementById('finalArea').innerHTML = `
-    <div class="result-box">
-      <h3>建議優先執行方案：${esc(winner.name)}</h3>
-      <p><strong>主要服務客群：</strong>${esc(winner.customer)}</p>
-      <p><strong>COCA 整合理由：</strong>${esc(winner.reason)}</p>
-      <p><strong>測試方式：</strong>${esc(winner.test)}</p>
-      <p><strong>觀察指標：</strong>${esc(winner.metric)}</p>
-      <p class="success">資料已完成，正在送入後台。</p>
-    </div>`;
+  document.getElementById('finalArea').innerHTML = buildCompleteCocaHtml(winner);
   await saveSubmission();
 }
 async function saveSubmission(){
@@ -654,15 +807,13 @@ async function saveSubmission(){
     data: JSON.stringify({step0:state.step0,step1:state.step1,step2:state.step2,step3:state.step3,step4:state.step4,final:state.final})
   };
   try{
-    const r = await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const j = await r.json();
-    if(!j.ok) throw new Error(j.error||'後台儲存失敗');
-    document.querySelector('#finalArea .success').textContent = '資料已送入講師後台。';
+    await fetch('/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   }catch(e){
-    document.querySelector('#finalArea .success').textContent = '資料已在本機完成，但後台儲存失敗：'+e.message;
+    console.warn('後台儲存失敗', e);
   }
 }
 
+document.getElementById('prepareQ5').addEventListener('click', prepareQ5Options);
 document.getElementById('finishStep0').addEventListener('click', finishStep0);
 document.getElementById('buildCustomerMap').addEventListener('click', buildCustomerMap);
 document.getElementById('finishStep2').addEventListener('click', finishStep2);
