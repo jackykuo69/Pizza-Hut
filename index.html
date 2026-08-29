@@ -25,7 +25,7 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
       <h1>COCA 商圈活動設計框架</h1>
       <div class="subtitle">從門店商圈判讀、顧客需求、我們條件與限制，收斂出可執行的商圈行動。</div>
     </div>
-    <div class="badge">課堂版 V31</div>
+    <div class="badge">課堂版 V32</div>
   </div>
 </header>
 <main>
@@ -43,12 +43,12 @@ table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}th{back
     <p class="hint">不用直接判斷自己是哪一種商圈。請依照現場事實作答，系統會綜合店附近環境、忙碌時段、訂單型態與接觸對象，初步判斷商圈主型與副型。</p>
 
     <h3>Q1｜你的店附近有哪些明顯環境？</h3>
-    <p class="hint">最多勾選 5 項，請優先選擇最常影響來客或業績的環境。勾選後，再從中指定 1～2 項最重要環境。</p>
+    <p class="hint">請勾選店附近確實存在，且可能影響來客或業績的環境。若是複合商圈，可以完整勾選；下一題再選出最主要影響因素。</p>
     <div id="q1Env" class="grid-3"></div>
-    <div id="q1TopSelectors" class="grid-2 hidden">
-      <div><label>最影響生意的環境<input type="text" id="q1Top1" list="q1TopList" placeholder="請從已勾選項目選一項"></label></div>
-      <div><label>次重要環境，可不填<input type="text" id="q1Top2" list="q1TopList" placeholder="若有明顯次要環境，請填寫"></label></div>
-      <datalist id="q1TopList"></datalist>
+    <div id="q1TopSelectors" class="card soft hidden">
+      <h3>Q1-2｜哪些環境最影響你的來客或業績？</h3>
+      <p class="hint">請從剛才勾選的環境中，選出 1～3 項最主要影響因素。這裡會作為商圈主型與副型的主要判斷依據。</p>
+      <div id="q1TopChoices" class="grid-3"></div>
     </div>
 
     <h3>Q2｜你的店通常哪些時段最忙？</h3>
@@ -263,16 +263,18 @@ function renderEnv(){
 }
 function updateQ1Top(){
   const selected = checkedValues('input[name="env"]');
-  if(selected.length>5){
-    this.checked = false;
-    alert('Q1 最多勾選 5 項，請保留最明顯、最常影響生意的環境。');
-    return updateQ1Top();
-  }
   const area = document.getElementById('q1TopSelectors');
-  const list = document.getElementById('q1TopList');
-  const opts = selected.map(k=>`<option value="${esc(ENV_ITEMS.find(x=>x[0]===k)?.[1]||k)}"></option>`).join('');
-  list.innerHTML = opts;
+  const choices = document.getElementById('q1TopChoices');
+  if(!choices) return;
+  choices.innerHTML = selected.map(k=>{
+    const label = envMap[k]?.[1] || k;
+    return `<label class="choice"><input type="checkbox" name="topEnv" value="${esc(k)}"> <span>${esc(label)}</span></label>`;
+  }).join('');
   area.classList.toggle('hidden', selected.length===0);
+  document.querySelectorAll('input[name="topEnv"]').forEach(cb=>cb.addEventListener('change', ()=>{
+    const tops = checkedValues('input[name="topEnv"]');
+    if(tops.length>3){ cb.checked=false; alert('最主要影響因素最多選 3 項。'); }
+  }));
 }
 function renderStep0Controls(){
   renderEnv();
@@ -359,27 +361,24 @@ function calculateStep0Base(){
   const env = checkedValues('input[name="env"]');
   if(!val('groupName') || !val('storeName')) throw new Error('請先填寫組別與門店。');
   if(env.length===0) throw new Error('Q1 請至少勾選 1 項店附近明顯環境。');
-  const top1 = val('q1Top1'), top2 = val('q1Top2');
+  const topEnv = checkedValues('input[name="topEnv"]');
   const selectedLabels = env.map(k=>envMap[k]?.[1]);
-  if(top1 && !selectedLabels.includes(top1)) throw new Error('Q1 最影響生意的環境，請從已勾選項目中填寫。');
-  if(top2 && !selectedLabels.includes(top2)) throw new Error('Q1 次重要環境，請從已勾選項目中填寫。');
+  const topLabels = topEnv.map(k=>envMap[k]?.[1]).filter(Boolean);
+  if(topEnv.length<1 || topEnv.length>3) throw new Error('Q1-2 請從已勾選的環境中選出 1～3 項最影響來客或業績的環境。');
+  if(topEnv.some(k=>!env.includes(k))) throw new Error('Q1-2 請從已勾選的環境中選擇。');
   const q2p=val('q2Primary'), q3p=val('q3Primary'), q4p=val('q4Primary');
   if(!q2p || !q3p || !q4p) throw new Error('Q2～Q4 請完成主要答案。');
   const q2s=val('q2Secondary'), q3s=val('q3Secondary'), q4s=val('q4Secondary');
   const scores = {office:0,res:0,campus:0,transit:0,leisure:0};
   env.forEach(k=>addScore(scores, envMap[k]?.[3], 1));
-  env.forEach(k=>{
-    const label = envMap[k]?.[1];
-    if(label===top1) addScore(scores, envMap[k]?.[3], 1.5);
-    if(label===top2) addScore(scores, envMap[k]?.[3], .8);
-  });
+  topEnv.forEach(k=>addScore(scores, envMap[k]?.[3], 2.2));
   addScore(scores, q2Map(q2p), 1.2); if(q2s) addScore(scores, q2Map(q2s), .6);
   addScore(scores, q3Map(q3p), 1.2); if(q3s) addScore(scores, q3Map(q3s), .6);
   addScore(scores, q4Map(q4p), 1.2); if(q4s) addScore(scores, q4Map(q4s), .6);
   const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
   const main = sorted[0][0], sub = sorted[1][1] > 0 ? sorted[1][0] : '';
   return {
-    env, envLabels:selectedLabels, top1, top2,
+    env, envLabels:selectedLabels, topEnv, topLabels,
     q2:{primary:q2p, secondary:q2s, primaryLabel:labelBy(OPTIONS.q2,q2p), secondaryLabel:labelBy(OPTIONS.q2,q2s)},
     q3:{primary:q3p, secondary:q3s, primaryLabel:labelBy(OPTIONS.q3,q3p), secondaryLabel:labelBy(OPTIONS.q3,q3s)},
     q4:{primary:q4p, secondary:q4s, primaryLabel:labelBy(OPTIONS.q4,q4p), secondaryLabel:labelBy(OPTIONS.q4,q4s)},
@@ -524,13 +523,16 @@ function renderPriorityTable(){
   const rows = data.map((d,i)=>`
     <tr>
       <td><strong>${esc(d.name)}</strong></td>
-      ${['performance','need','contact','resource','constraint'].map(k=>`<td><select class="priority-select score-select" data-row="${i}" data-key="${k}"><option value="1">低</option><option value="3" selected>中</option><option value="5">高</option></select></td>`).join('')}
+      ${['performance','need','contact'].map(k=>`<td><select class="priority-select score-select" data-row="${i}" data-key="${k}"><option value="1">低</option><option value="3" selected>中</option><option value="5">高</option></select></td>`).join('')}
     </tr>`).join('');
   document.getElementById('priorityArea').innerHTML = `
     <h3>客群經營優先判斷</h3>
-    <p class="hint">請依門店實際情況評估低／中／高。績效貢獻看這類顧客對業績、來客、回訪或團訂的幫助；需求清楚看我們是否知道他的需求與痛點；接觸容易看我們是否找得到、通知得到或影響得到這類顧客；資源支援看目前店總、門店、總部與商圈條件是否能支援；限制好處理看相關限制是否能透過調整方式降低影響。</p>
+    <p class="hint">請依門店實際情況評估低／中／高。</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>客群</th><th>績效貢獻</th><th>需求清楚</th><th>接觸容易</th><th>資源支援</th><th>限制好處理</th></tr></thead>
+      <thead><tr><th>客群</th>
+        <th>績效貢獻<br><small>對業績、來客、回訪或團訂的幫助</small></th>
+        <th>需求清楚<br><small>是否知道情境、需求與痛點</small></th>
+        <th>接觸容易<br><small>是否找得到、通知得到或影響得到</small></th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
     <div class="actions"><button id="finishStep1">完成客群優先判斷</button></div>
@@ -538,15 +540,14 @@ function renderPriorityTable(){
   document.getElementById('finishStep1').addEventListener('click', finishStep1);
 }
 function finishStep1(){
-  const weights = {performance:.4, need:.15, contact:.15, resource:.15, constraint:.15};
+  const weights = {performance:.5, need:.25, contact:.25};
   const rows = state.step1.customers.map((d,i)=>{
     const scores = {};
     document.querySelectorAll(`.priority-select[data-row="${i}"]`).forEach(sel=>scores[sel.dataset.key]=Number(sel.value));
     const weighted = Object.entries(weights).reduce((sum,[k,w])=>sum+(scores[k]||0)*w,0);
     let treatment = '暫不優先';
-    if(scores.performance>=5 && (scores.contact<=1 || scores.resource<=1)) treatment = '需先開發條件';
-    else if(weighted>=4) treatment = '本次優先';
-    else if(weighted>=3) treatment = '可小規模測試';
+    if(weighted>=4) treatment = '本次優先';
+    else if(weighted>=3) treatment = '次要觀察';
     return {...d, priorityScores:scores, weighted:+weighted.toFixed(2), treatment};
   }).sort((a,b)=>b.weighted-a.weighted);
   const top = rows[0];
@@ -675,8 +676,14 @@ function renderEvaluation(){
   state.step4.selected = selected;
   document.getElementById('evaluationArea').innerHTML = `
     <h3>方案評估表</h3>
-    <p class="hint">請用 1／3／5 評估每個候選方案。5 分代表條件較好，1 分代表條件較弱。效益看「對業績、來客、回訪、團訂或商圈接觸的幫助」；可行性看「目前人力、流程、設備、空間與資源是否容易執行」；成本看「人力、時間、物料或費用負擔是否低」；風險性看「是否不容易干擾出餐、取餐、外送、顧客體驗或品牌規範」；測試性看「是否能先用小範圍、少量名額、單一時段或單一合作點試行」。</p>
-    <div class="table-wrap"><table><thead><tr><th>方案</th><th>效益</th><th>可行性</th><th>成本</th><th>風險性</th><th>測試性</th><th>總分</th><th>結果</th></tr></thead><tbody>
+    <p class="hint">請用 1／3／5 評估每個候選方案，5 分代表條件較好，1 分代表條件較弱。</p>
+    <div class="table-wrap"><table><thead><tr><th>方案</th>
+        <th>效益<br><small>對業績、來客、回訪、團訂或商圈接觸的幫助</small></th>
+        <th>可行性<br><small>目前人力、流程、設備、空間與資源是否容易執行</small></th>
+        <th>成本<br><small>人力、時間、物料或費用負擔是否低</small></th>
+        <th>風險性<br><small>是否不容易干擾營運、顧客體驗或品牌規範</small></th>
+        <th>測試性<br><small>是否能先用小範圍、少量名額或單一時段試行</small></th>
+        <th>總分</th><th>結果</th></tr></thead><tbody>
       ${selected.map((p,i)=>`<tr>
         <td><strong>${esc(p.name)}</strong></td>
         ${['benefit','feasibility','cost','risk','testability'].map(k=>`<td><select class="eval-select score-select" data-row="${i}" data-key="${k}"><option value="1">1</option><option value="3" selected>3</option><option value="5">5</option></select></td>`).join('')}
@@ -729,11 +736,27 @@ function csvList(items){
 function tableRows(rows){
   return rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('');
 }
+function summarizeCustomersForCanvas(customers){
+  return (customers||[]).map(c=>`${c.name}：${csvList(c.contexts)}；需求：${csvList(c.pains)}；選擇理由：${csvList(c.reasons)}`).join('｜');
+}
+function summarizeStrengths(step2){
+  const goals = csvList(step2?.goals);
+  const strengths = csvList(step2?.strengths);
+  return [goals ? `經營期待：${goals}` : '', strengths ? `可用優勢：${strengths}` : ''].filter(Boolean).join('｜');
+}
+function summarizeLimits(step3){
+  return [
+    (step3?.keyLimits?.length ? `關鍵限制：${csvList(step3.keyLimits)}` : ''),
+    (step3?.impacts?.length ? `造成影響：${csvList(step3.impacts)}` : ''),
+    (step3?.directions?.length ? `避開或降低影響：${csvList(step3.directions)}` : '')
+  ].filter(Boolean).join('｜');
+}
 function buildCompleteCocaHtml(winner){
-  const s0=state.step0||{}, s1=state.step1||{}, s2=state.step2||{}, s3=state.step3||{}, s4=state.step4||{};
-  const customers = s1.customers || [];
-  const candidates = s4.candidates || [];
-  const evalRows = s4.evaluation || [];
+  const s0=state.step0||{}, s1=state.step1||{}, s2=state.step2||{}, s3=state.step3||{};
+  const consumerText = summarizeCustomersForCanvas(s1.customers || []);
+  const resourceText = summarizeStrengths(s2);
+  const limitText = summarizeLimits(s3);
+  const planText = `方案名稱：${winner.name}｜主要服務客群：${winner.customer}｜COCA 整合理由：${winner.reason}｜測試方式：${winner.test}｜觀察指標：${winner.metric}`;
   return `
     <div class="result-box" id="printResult">
       <h3>Action Design 已完成</h3>
@@ -744,43 +767,36 @@ function buildCompleteCocaHtml(winner){
       <div class="table-wrap"><table><tbody>${tableRows([
         ['商圈判讀', s0.typeLabel||''],
         ['店附近明顯環境', csvList(s0.envLabels)],
+        ['最影響生意的環境', csvList(s0.topLabels)],
         ['最忙時段', [s0.q2?.primaryLabel,s0.q2?.secondaryLabel].filter(Boolean).join('、')],
         ['購買任務', [s0.q3?.primaryLabel,s0.q3?.secondaryLabel].filter(Boolean).join('、')],
         ['主要／次要顧客', [s0.q4?.primaryLabel,s0.q4?.secondaryLabel].filter(Boolean).join('、')],
         ['本次經營目標', s0.q5?.label||'']
       ])}</tbody></table></div>
 
-      <h3>Step 1｜C. 消費者的需求與痛點</h3>
-      <div class="table-wrap"><table><thead><tr><th>顧客類型</th><th>出現情境</th><th>需求與痛點</th><th>選擇我們的理由</th></tr></thead><tbody>${tableRows(customers.map(c=>[c.name,csvList(c.contexts),csvList(c.pains),csvList(c.reasons)]))}</tbody></table></div>
-      <p><strong>本次建議優先經營：</strong>${esc(s1.priority?.recommended||'')}</p>
-
-      <h3>Step 2｜O. 現有的作戰條件盤點</h3>
-      <div class="table-wrap"><table><tbody>${tableRows([
-        ['店總經理經營期待', csvList(s2.goals)],
-        ['可用優勢', csvList(s2.strengths)],
-        ['待處理限制', csvList(s2.limits)]
-      ])}</tbody></table></div>
-
-      <h3>Step 3｜C. 條件與限制的影響與避開方式</h3>
-      <div class="table-wrap"><table><tbody>${tableRows([
-        ['關鍵限制', csvList(s3.keyLimits)],
-        ['造成影響', csvList(s3.impacts)],
-        ['避開或降低影響的做法', csvList(s3.directions)]
-      ])}</tbody></table></div>
-
-      <h3>Step 4｜A. 行動設計／設計方案</h3>
-      <h3>候選方案</h3>
-      <div class="table-wrap"><table><thead><tr><th>主要服務客群</th><th>方案名稱</th><th>COCA 整合理由</th><th>回應需求</th><th>運用條件</th><th>注意限制</th><th>測試方式</th><th>觀察指標</th></tr></thead><tbody>${tableRows(candidates.map(x=>[x.customer,x.name,x.reason,x.need,x.resource,x.constraint,x.test,x.metric]))}</tbody></table></div>
-      <h3>方案評估結果</h3>
-      <div class="table-wrap"><table><thead><tr><th>方案</th><th>效益</th><th>可行性</th><th>成本</th><th>風險性</th><th>測試性</th><th>總分</th></tr></thead><tbody>${tableRows(evalRows.map(r=>[r.plan?.name, r.scores?.benefit, r.scores?.feasibility, r.scores?.cost, r.scores?.risk, r.scores?.testability, r.total]))}</tbody></table></div>
-      <h3>建議優先執行方案</h3>
-      <div class="table-wrap"><table><tbody>${tableRows([
-        ['方案名稱', winner.name],
-        ['主要服務客群', winner.customer],
-        ['COCA 整合理由', winner.reason],
-        ['測試方式', winner.test],
-        ['觀察指標', winner.metric]
-      ])}</tbody></table></div>
+      <h3>COC 商圈活動脈絡策劃表</h3>
+      <div class="table-wrap"><table class="canvas-table">
+        <thead>
+          <tr>
+            <th style="width:13%"></th>
+            <th>消費者需求與痛點<br><small>顧客是誰、在什麼情境出現、在意什麼</small></th>
+            <th>資源與做法<br><small>我們有哪些條件、優勢、資源與既有做法</small></th>
+            <th>條件與限制<br><small>哪些限制會影響活動，如何避開或降低影響</small></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>方案要素分析</th>
+            <td>${esc(consumerText)}</td>
+            <td>${esc(resourceText)}</td>
+            <td>${esc(limitText)}</td>
+          </tr>
+          <tr>
+            <th>方案擬定</th>
+            <td colspan="3">${esc(planText)}</td>
+          </tr>
+        </tbody>
+      </table></div>
     </div>`;
 }
 async function completeAction(){

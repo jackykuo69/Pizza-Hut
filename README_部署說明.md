@@ -10,7 +10,7 @@
 - index.html
 - schema.sql
 - README_部署說明.md
-- CHANGELOG_V31.md
+- CHANGELOG_V32.md
 
 ## Cloudflare 設定
 D1 binding 維持：
